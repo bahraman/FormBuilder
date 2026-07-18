@@ -1,4 +1,4 @@
-# Dynamic Form Builder Microservice
+# Vendo-FormBuilder
 
 Production-ready ASP.NET Core (.NET 10) microservice for creating, versioning, publishing, and collecting responses for unlimited dynamic forms — without code changes.
 
@@ -8,10 +8,10 @@ Clean Architecture with inward-pointing dependencies:
 
 | Project | Responsibility |
 |---------|----------------|
-| `FormBuilder.Api` | REST endpoints, Serilog, Swagger, global exception handling |
-| `FormBuilder.Application` | CQRS (MediatR), FluentValidation, DTOs, business workflows |
-| `FormBuilder.Domain` | Entities, enums, domain rules, repository interfaces |
-| `FormBuilder.Infrastructure` | EF Core, SQL Server, persistence implementations |
+| `Vendo.FormBuilder.Api` | REST endpoints, Serilog, Swagger, global exception handling |
+| `Vendo.FormBuilder.Application` | CQRS (MediatR), FluentValidation, DTOs, business workflows |
+| `Vendo.FormBuilder.Domain` | Entities, enums, domain rules, repository interfaces |
+| `Vendo.FormBuilder.Infrastructure` | EF Core, SQL Server, persistence implementations |
 
 ```
 Api → Application → Domain
@@ -87,11 +87,11 @@ docker compose up sqlserver -d
 
 # Apply migrations
 dotnet ef database update \
-  --project src/FormBuilder.Infrastructure \
-  --startup-project src/FormBuilder.Api
+  --project src/Vendo.FormBuilder.Infrastructure \
+  --startup-project src/Vendo.FormBuilder.Api
 
 # Run API
-dotnet run --project src/FormBuilder.Api
+dotnet run --project src/Vendo.FormBuilder.Api
 ```
 
 ### Tests
@@ -166,12 +166,12 @@ curl -X POST http://localhost:8080/api/forms/FORM_ID/responses \
 
 ```
 src/
-  FormBuilder.Api/
-  FormBuilder.Application/
-  FormBuilder.Domain/
-  FormBuilder.Infrastructure/
+  Vendo.FormBuilder.Api/
+  Vendo.FormBuilder.Application/
+  Vendo.FormBuilder.Domain/
+  Vendo.FormBuilder.Infrastructure/
 tests/
-  FormBuilder.UnitTests/
+  Vendo.FormBuilder.UnitTests/
 docker-compose.yml
 Dockerfile
 ```
