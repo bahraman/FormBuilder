@@ -42,6 +42,20 @@ Api → Application → Domain
 - ProblemDetails error responses
 - Async APIs throughout
 
+## Out of Scope (v1)
+
+The initial version intentionally does **not** include:
+
+- Authentication
+- Authorization
+- User management
+- Workflow engine
+- Notifications
+- Frontend UI
+- Reporting
+
+Optional `createdBy` / `updatedBy` / `submittedBy` strings are audit metadata only — not a user system.
+
 ## Supported Field Types
 
 `Text`, `MultilineText`, `Number`, `Decimal`, `Date`, `Time`, `DateTime`, `Email`, `Phone`, `Url`, `Checkbox`, `RadioButton`, `Dropdown`, `MultiSelect`, `Password`, `FileUpload`, `ImageUpload`
