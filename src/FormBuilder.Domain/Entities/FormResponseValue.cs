@@ -1,0 +1,34 @@
+using FormBuilder.Domain.Common;
+
+namespace FormBuilder.Domain.Entities;
+
+public class FormResponseValue : BaseEntity
+{
+    public Guid FormResponseId { get; private set; }
+    public FormResponse? FormResponse { get; private set; }
+    public Guid FormFieldId { get; private set; }
+    public FormField? FormField { get; private set; }
+    public string FieldName { get; private set; } = string.Empty;
+    public string? Value { get; private set; }
+
+    private FormResponseValue()
+    {
+    }
+
+    public static FormResponseValue Create(
+        Guid formResponseId,
+        Guid formFieldId,
+        string fieldName,
+        string? value)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(fieldName);
+
+        return new FormResponseValue
+        {
+            FormResponseId = formResponseId,
+            FormFieldId = formFieldId,
+            FieldName = fieldName.Trim(),
+            Value = value
+        };
+    }
+}

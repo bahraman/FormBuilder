@@ -1,0 +1,73 @@
+using FormBuilder.Application.Common.Mappings;
+using FormBuilder.Application.Forms.Dtos;
+using FormBuilder.Domain.Exceptions;
+using FormBuilder.Domain.Interfaces;
+using MediatR;
+
+namespace FormBuilder.Application.Forms.Commands.UpdateFormField;
+
+public sealed record UpdateFormFieldCommand(
+    Guid FormId,
+    Guid FieldId,
+    string Label,
+    bool IsRequired,
+    string? Placeholder,
+    string? HelpText,
+    string? DefaultValue,
+    string RowVersion,
+    IReadOnlyList<FieldOptionInputDto>? Options = null,
+    IReadOnlyList<FieldValidationRuleInputDto>? ValidationRules = null,
+    string? UpdatedBy = null) : IRequest<FormFieldDto>;
+
+public sealed class UpdateFormFieldCommandHandler : IRequestHandler<UpdateFormFieldCommand, FormFieldDto>
+{
+    private readonly IFormRepository _formRepository;
+    private readonly IUnitOfWork _unitOfWork;
+
+    public UpdateFormFieldCommandHandler(IFormRepository formRepository, IUnitOfWork unitOfWork)
+    {
+        _formRepository = formRepository;
+        _unitOfWork = unitOfWork;
+    }
+
+    public async Task<FormFieldDto> Handle(UpdateFormFieldCommand request, CancellationToken cancellationToken)
+    {
+        var form = await _formRepository.GetByIdWithDetailsAsync(request.FormId, cancellationToken)
+            ?? throw new NotFoundException(nameof(Domain.Entities.Form), request.FormId);
+
+        if (form.Status != Domain.Enums.FormStatus.Draft)
+        {
+            throw new ConflictException("Only draft forms can be modified. Create a new version to make changes.");
+        }
+
+        var field = form.GetField(request.FieldId);
+        field.RowVersion = Convert.FromBase64String(request.RowVersion);
+        field.Update(
+            request.Label,
+            request.IsRequired,
+            request.Placeholder,
+            request.HelpText,
+            request.DefaultValue,
+            request.UpdatedBy);
+
+        if (request.Options is not null)
+        {
+            field.ReplaceOptions(request.Options.Select(o =>
+                (o.Label, o.Value, o.DisplayOrder, o.IsDefault)));
+        }
+
+        if (request.ValidationRules is not null)
+        {
+            field.ReplaceValidationRules(request.ValidationRules.Select(r =>
+                (r.RuleType, r.Value, r.ErrorMessage)));
+        }
+
+        form.UpdatedAtUtc = DateTime.UtcNow;
+        form.UpdatedBy = request.UpdatedBy;
+        _formRepository.Update(form);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return field.ToDto();
+    }
+}
+

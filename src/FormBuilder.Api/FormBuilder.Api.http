@@ -1,0 +1,91 @@
+@host = http://localhost:8080
+@formId = 00000000-0000-0000-0000-000000000000
+@fieldId = 00000000-0000-0000-0000-000000000000
+@responseId = 00000000-0000-0000-0000-000000000000
+@rowVersion = AAAA
+
+### Health
+GET {{host}}/api/health
+
+### List forms
+GET {{host}}/api/forms?pageNumber=1&pageSize=20
+
+### Create form
+POST {{host}}/api/forms
+Content-Type: application/json
+
+{
+  "name": "Contact Us",
+  "description": "Website contact form",
+  "slug": "contact-us",
+  "createdBy": "admin"
+}
+
+### Get form
+GET {{host}}/api/forms/{{formId}}
+
+### Add text field
+POST {{host}}/api/forms/{{formId}}/fields
+Content-Type: application/json
+
+{
+  "name": "fullName",
+  "label": "Full Name",
+  "fieldType": "Text",
+  "displayOrder": 0,
+  "isRequired": true,
+  "placeholder": "Jane Doe",
+  "validationRules": [
+    { "ruleType": "MinLength", "value": "2", "errorMessage": "Name is too short" },
+    { "ruleType": "MaxLength", "value": "100", "errorMessage": "Name is too long" }
+  ]
+}
+
+### Add dropdown field
+POST {{host}}/api/forms/{{formId}}/fields
+Content-Type: application/json
+
+{
+  "name": "topic",
+  "label": "Topic",
+  "fieldType": "Dropdown",
+  "displayOrder": 1,
+  "isRequired": true,
+  "options": [
+    { "label": "Sales", "value": "sales", "displayOrder": 0, "isDefault": true },
+    { "label": "Support", "value": "support", "displayOrder": 1, "isDefault": false }
+  ]
+}
+
+### Publish form
+POST {{host}}/api/forms/{{formId}}/publish
+Content-Type: application/json
+
+{
+  "actor": "admin"
+}
+
+### Submit response
+POST {{host}}/api/forms/{{formId}}/responses
+Content-Type: application/json
+
+{
+  "submittedBy": "jane@example.com",
+  "values": [
+    { "fieldId": "{{fieldId}}", "value": "Jane Doe" }
+  ]
+}
+
+### List responses
+GET {{host}}/api/forms/{{formId}}/responses?pageNumber=1&pageSize=20
+
+### Get response
+GET {{host}}/api/responses/{{responseId}}
+
+### Create new version
+POST {{host}}/api/forms/{{formId}}/versions
+Content-Type: application/json
+
+{
+  "actor": "admin"
+}
