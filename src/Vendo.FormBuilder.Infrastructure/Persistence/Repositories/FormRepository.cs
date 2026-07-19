@@ -32,8 +32,8 @@ public sealed class FormRepository : IFormRepository
     }
 
     public async Task<(IReadOnlyList<Form> Items, int TotalCount)> GetPagedAsync(
-        Guid subscriberId,
-        Guid? restaurantId,
+        int subscriberId,
+        int? restaurantId,
         int pageNumber,
         int pageSize,
         string? search = null,
@@ -71,8 +71,8 @@ public sealed class FormRepository : IFormRepository
     }
 
     public Task<bool> SlugExistsAsync(
-        Guid subscriberId,
-        Guid? restaurantId,
+        int subscriberId,
+        int? restaurantId,
         string slug,
         Guid? excludeFormId = null,
         CancellationToken cancellationToken = default)
@@ -92,8 +92,8 @@ public sealed class FormRepository : IFormRepository
     }
 
     public async Task<int> GetLatestVersionAsync(
-        Guid subscriberId,
-        Guid? restaurantId,
+        int subscriberId,
+        int? restaurantId,
         string slug,
         CancellationToken cancellationToken = default)
     {
@@ -124,8 +124,8 @@ public sealed class FormRepository : IFormRepository
     /// </summary>
     private static IQueryable<Form> ApplyTenantFilter(
         IQueryable<Form> query,
-        Guid subscriberId,
-        Guid? restaurantId)
+        int subscriberId,
+        int? restaurantId)
     {
         query = query.Where(f => f.SubscriberId == subscriberId);
 

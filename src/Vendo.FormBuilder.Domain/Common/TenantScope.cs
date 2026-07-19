@@ -7,18 +7,18 @@ namespace Vendo.FormBuilder.Domain.Common;
 /// SubscriberId is always required. RestaurantId is optional:
 /// null = subscriber-level (shared across restaurants); set = restaurant-specific.
 /// </summary>
-public readonly record struct TenantScope(Guid SubscriberId, Guid? RestaurantId)
+public readonly record struct TenantScope(int SubscriberId, int? RestaurantId)
 {
-    public static TenantScope ForSubscriber(Guid subscriberId, Guid? restaurantId = null)
+    public static TenantScope ForSubscriber(int subscriberId, int? restaurantId = null)
     {
-        if (subscriberId == Guid.Empty)
+        if (subscriberId <= 0)
         {
-            throw new DomainException("SubscriberId is required.");
+            throw new DomainException("SubscriberId is required and must be a positive integer.");
         }
 
-        if (restaurantId == Guid.Empty)
+        if (restaurantId is <= 0)
         {
-            throw new DomainException("RestaurantId cannot be an empty GUID. Omit it for subscriber-level forms.");
+            throw new DomainException("RestaurantId must be a positive integer when provided. Omit it for subscriber-level forms.");
         }
 
         return new TenantScope(subscriberId, restaurantId);
@@ -29,7 +29,7 @@ public readonly record struct TenantScope(Guid SubscriberId, Guid? RestaurantId)
     /// Subscriber mismatch is never allowed. Restaurant-specific forms are only
     /// visible to that restaurant (or to a subscriber-wide request with no restaurant filter).
     /// </summary>
-    public bool CanAccess(Guid formSubscriberId, Guid? formRestaurantId)
+    public bool CanAccess(int formSubscriberId, int? formRestaurantId)
     {
         if (formSubscriberId != SubscriberId)
         {
@@ -46,7 +46,7 @@ public readonly record struct TenantScope(Guid SubscriberId, Guid? RestaurantId)
         return formRestaurantId is null || formRestaurantId == RestaurantId;
     }
 
-    public void EnsureCanAccess(Guid formSubscriberId, Guid? formRestaurantId)
+    public void EnsureCanAccess(int formSubscriberId, int? formRestaurantId)
     {
         if (!CanAccess(formSubscriberId, formRestaurantId))
         {

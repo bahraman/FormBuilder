@@ -8,8 +8,8 @@ namespace Vendo.FormBuilder.Application.Forms.Commands.ReorderFormFields;
 
 public sealed record ReorderFormFieldsCommand(
     Guid FormId,
-    Guid SubscriberId,
-    Guid? RestaurantId,
+    int SubscriberId,
+    int? RestaurantId,
     IReadOnlyList<FieldOrderItemDto> FieldOrders,
     string? UpdatedBy = null) : IRequest<FormDetailDto>;
 

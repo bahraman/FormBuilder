@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -15,18 +14,18 @@ namespace Vendo.FormBuilder.Infrastructure.Persistence.Migrations
                 name: "IX_Forms_Slug_Version",
                 table: "Forms");
 
-            migrationBuilder.AddColumn<Guid>(
+            migrationBuilder.AddColumn<int>(
                 name: "RestaurantId",
                 table: "Forms",
-                type: "uniqueidentifier",
+                type: "int",
                 nullable: true);
 
-            migrationBuilder.AddColumn<Guid>(
+            migrationBuilder.AddColumn<int>(
                 name: "SubscriberId",
                 table: "Forms",
-                type: "uniqueidentifier",
+                type: "int",
                 nullable: false,
-                defaultValue: new Guid("00000000-0000-0000-0000-000000000000"));
+                defaultValue: 0);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Forms_SubscriberId",

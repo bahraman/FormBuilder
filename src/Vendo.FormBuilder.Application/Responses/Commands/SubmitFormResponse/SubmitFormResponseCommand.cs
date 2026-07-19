@@ -10,8 +10,8 @@ namespace Vendo.FormBuilder.Application.Responses.Commands.SubmitFormResponse;
 
 public sealed record SubmitFormResponseCommand(
     Guid FormId,
-    Guid SubscriberId,
-    Guid? RestaurantId,
+    int SubscriberId,
+    int? RestaurantId,
     IReadOnlyList<FormResponseValueInputDto> Values,
     string? SubmittedBy = null,
     string? IpAddress = null,

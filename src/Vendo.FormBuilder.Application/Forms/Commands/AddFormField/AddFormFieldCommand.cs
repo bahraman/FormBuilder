@@ -9,8 +9,8 @@ namespace Vendo.FormBuilder.Application.Forms.Commands.AddFormField;
 
 public sealed record AddFormFieldCommand(
     Guid FormId,
-    Guid SubscriberId,
-    Guid? RestaurantId,
+    int SubscriberId,
+    int? RestaurantId,
     string Name,
     string Label,
     FieldType FieldType,

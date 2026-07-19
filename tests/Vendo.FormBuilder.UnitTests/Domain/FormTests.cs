@@ -8,10 +8,10 @@ namespace Vendo.FormBuilder.UnitTests.Domain;
 
 public sealed class FormTests
 {
-    private static readonly Guid SubscriberA = Guid.Parse("11111111-1111-1111-1111-111111111111");
-    private static readonly Guid SubscriberB = Guid.Parse("22222222-2222-2222-2222-222222222222");
-    private static readonly Guid Restaurant1 = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
-    private static readonly Guid Restaurant2 = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+    private const int SubscriberA = 1;
+    private const int SubscriberB = 2;
+    private const int Restaurant1 = 10;
+    private const int Restaurant2 = 20;
 
     [Fact]
     public void Create_ShouldRequireSubscriberAndAllowNullRestaurant()
@@ -39,7 +39,7 @@ public sealed class FormTests
     [Fact]
     public void Create_WithEmptySubscriber_ShouldThrow()
     {
-        var act = () => Form.Create(Guid.Empty, null, "Name", null, "slug");
+        var act = () => Form.Create(0, null, "Name", null, "slug");
 
         act.Should().Throw<DomainException>().WithMessage("*SubscriberId*");
     }

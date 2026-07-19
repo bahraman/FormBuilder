@@ -12,7 +12,7 @@ using Vendo.FormBuilder.Infrastructure.Persistence;
 namespace Vendo.FormBuilder.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260719104808_AddFormTenantOwnership")]
+    [Migration("20260719110720_AddFormTenantOwnership")]
     partial class AddFormTenantOwnership
     {
         /// <inheritdoc />
@@ -180,8 +180,8 @@ namespace Vendo.FormBuilder.Infrastructure.Persistence.Migrations
                     b.Property<DateTime?>("PublishedAtUtc")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid?>("RestaurantId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int?>("RestaurantId")
+                        .HasColumnType("int");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
@@ -199,8 +199,8 @@ namespace Vendo.FormBuilder.Infrastructure.Persistence.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<Guid>("SubscriberId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("SubscriberId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("UpdatedAtUtc")
                         .HasColumnType("datetime2");

@@ -10,13 +10,13 @@ public class Form : BaseEntity
     private readonly List<FormResponse> _responses = [];
 
     /// <summary>Required owner. Forms are always isolated by subscriber.</summary>
-    public Guid SubscriberId { get; private set; }
+    public int SubscriberId { get; private set; }
 
     /// <summary>
     /// Optional restaurant owner. Null = subscriber-level (shared across restaurants).
     /// Set = restaurant-specific and isolated from other restaurants.
     /// </summary>
-    public Guid? RestaurantId { get; private set; }
+    public int? RestaurantId { get; private set; }
 
     public string Name { get; private set; } = string.Empty;
     public string? Description { get; private set; }
@@ -38,8 +38,8 @@ public class Form : BaseEntity
     }
 
     public static Form Create(
-        Guid subscriberId,
-        Guid? restaurantId,
+        int subscriberId,
+        int? restaurantId,
         string name,
         string? description,
         string slug,

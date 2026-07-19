@@ -6,9 +6,9 @@ namespace Vendo.FormBuilder.UnitTests.Domain;
 
 public sealed class TenantScopeTests
 {
-    private static readonly Guid SubscriberA = Guid.Parse("11111111-1111-1111-1111-111111111111");
-    private static readonly Guid Restaurant1 = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
-    private static readonly Guid Restaurant2 = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+    private const int SubscriberA = 1;
+    private const int Restaurant1 = 10;
+    private const int Restaurant2 = 20;
 
     [Fact]
     public void CanAccess_SharedForm_FromRestaurantScope_ShouldBeTrue()
@@ -27,9 +27,9 @@ public sealed class TenantScopeTests
     }
 
     [Fact]
-    public void ForSubscriber_WithEmptyRestaurant_ShouldThrow()
+    public void ForSubscriber_WithNonPositiveRestaurant_ShouldThrow()
     {
-        var act = () => TenantScope.ForSubscriber(SubscriberA, Guid.Empty);
+        var act = () => TenantScope.ForSubscriber(SubscriberA, 0);
 
         act.Should().Throw<DomainException>();
     }

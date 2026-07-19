@@ -10,8 +10,8 @@ namespace Vendo.FormBuilder.Application.Forms.Commands.UpdateFormField;
 public sealed record UpdateFormFieldCommand(
     Guid FormId,
     Guid FieldId,
-    Guid SubscriberId,
-    Guid? RestaurantId,
+    int SubscriberId,
+    int? RestaurantId,
     string Label,
     bool IsRequired,
     string? Placeholder,

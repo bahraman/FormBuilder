@@ -31,9 +31,9 @@ public sealed class FormFieldsController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<FormFieldDto>> AddField(
         Guid formId,
-        [FromQuery] Guid subscriberId,
+        [FromQuery] int subscriberId,
         [FromBody] AddFormFieldRequest request,
-        [FromQuery] Guid? restaurantId = null,
+        [FromQuery] int? restaurantId = null,
         CancellationToken cancellationToken = default)
     {
         var result = await _sender.Send(
@@ -71,9 +71,9 @@ public sealed class FormFieldsController : ControllerBase
     public async Task<ActionResult<FormFieldDto>> UpdateField(
         Guid formId,
         Guid fieldId,
-        [FromQuery] Guid subscriberId,
+        [FromQuery] int subscriberId,
         [FromBody] UpdateFormFieldRequest request,
-        [FromQuery] Guid? restaurantId = null,
+        [FromQuery] int? restaurantId = null,
         CancellationToken cancellationToken = default)
     {
         var result = await _sender.Send(
@@ -105,8 +105,8 @@ public sealed class FormFieldsController : ControllerBase
     public async Task<IActionResult> DeleteField(
         Guid formId,
         Guid fieldId,
-        [FromQuery] Guid subscriberId,
-        [FromQuery] Guid? restaurantId = null,
+        [FromQuery] int subscriberId,
+        [FromQuery] int? restaurantId = null,
         [FromQuery] string? deletedBy = null,
         CancellationToken cancellationToken = default)
     {
@@ -125,9 +125,9 @@ public sealed class FormFieldsController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<FormDetailDto>> ReorderFields(
         Guid formId,
-        [FromQuery] Guid subscriberId,
+        [FromQuery] int subscriberId,
         [FromBody] ReorderFormFieldsRequest request,
-        [FromQuery] Guid? restaurantId = null,
+        [FromQuery] int? restaurantId = null,
         CancellationToken cancellationToken = default)
     {
         var result = await _sender.Send(

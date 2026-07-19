@@ -7,8 +7,8 @@ namespace Vendo.FormBuilder.Application.Forms.Queries.GetFormById;
 
 public sealed record GetFormByIdQuery(
     Guid FormId,
-    Guid SubscriberId,
-    Guid? RestaurantId = null) : IRequest<FormDetailDto>;
+    int SubscriberId,
+    int? RestaurantId = null) : IRequest<FormDetailDto>;
 
 public sealed class GetFormByIdQueryHandler : IRequestHandler<GetFormByIdQuery, FormDetailDto>
 {

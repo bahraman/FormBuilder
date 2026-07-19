@@ -8,8 +8,8 @@ namespace Vendo.FormBuilder.Application.Forms.Commands.ArchiveForm;
 
 public sealed record ArchiveFormCommand(
     Guid FormId,
-    Guid SubscriberId,
-    Guid? RestaurantId = null,
+    int SubscriberId,
+    int? RestaurantId = null,
     string? UpdatedBy = null) : IRequest<FormDetailDto>;
 
 public sealed class ArchiveFormCommandHandler : IRequestHandler<ArchiveFormCommand, FormDetailDto>

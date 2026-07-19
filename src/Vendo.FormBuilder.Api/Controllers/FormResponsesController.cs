@@ -30,9 +30,9 @@ public sealed class FormResponsesController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<FormResponseDto>> SubmitResponse(
         Guid formId,
-        [FromQuery] Guid subscriberId,
+        [FromQuery] int subscriberId,
         [FromBody] SubmitFormResponseRequest request,
-        [FromQuery] Guid? restaurantId = null,
+        [FromQuery] int? restaurantId = null,
         CancellationToken cancellationToken = default)
     {
         var result = await _sender.Send(
@@ -60,8 +60,8 @@ public sealed class FormResponsesController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<PagedResult<FormResponseDto>>> GetResponses(
         Guid formId,
-        [FromQuery] Guid subscriberId,
-        [FromQuery] Guid? restaurantId = null,
+        [FromQuery] int subscriberId,
+        [FromQuery] int? restaurantId = null,
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 20,
         CancellationToken cancellationToken = default)
@@ -81,8 +81,8 @@ public sealed class FormResponsesController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<FormResponseDto>> GetResponseById(
         Guid responseId,
-        [FromQuery] Guid subscriberId,
-        [FromQuery] Guid? restaurantId = null,
+        [FromQuery] int subscriberId,
+        [FromQuery] int? restaurantId = null,
         CancellationToken cancellationToken = default)
     {
         var result = await _sender.Send(

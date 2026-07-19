@@ -9,8 +9,8 @@ namespace Vendo.FormBuilder.Application.Responses.Queries.GetFormResponses;
 
 public sealed record GetFormResponsesQuery(
     Guid FormId,
-    Guid SubscriberId,
-    Guid? RestaurantId = null,
+    int SubscriberId,
+    int? RestaurantId = null,
     int PageNumber = 1,
     int PageSize = 20) : IRequest<PagedResult<FormResponseDto>>;
 

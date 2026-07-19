@@ -8,8 +8,8 @@ namespace Vendo.FormBuilder.Application.Forms.Commands.DeleteFormField;
 public sealed record DeleteFormFieldCommand(
     Guid FormId,
     Guid FieldId,
-    Guid SubscriberId,
-    Guid? RestaurantId = null,
+    int SubscriberId,
+    int? RestaurantId = null,
     string? DeletedBy = null) : IRequest;
 
 public sealed class DeleteFormFieldCommandHandler : IRequestHandler<DeleteFormFieldCommand>

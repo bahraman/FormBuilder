@@ -9,8 +9,8 @@ using MediatR;
 namespace Vendo.FormBuilder.Application.Forms.Commands.CreateForm;
 
 public sealed record CreateFormCommand(
-    Guid SubscriberId,
-    Guid? RestaurantId,
+    int SubscriberId,
+    int? RestaurantId,
     string Name,
     string? Description,
     string Slug,

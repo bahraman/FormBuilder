@@ -149,10 +149,10 @@ dotnet test
 # 1. Create subscriber-level form (shared across restaurants)
 curl -X POST http://localhost:8080/api/forms \
   -H "Content-Type: application/json" \
-  -d '{"subscriberId":"11111111-1111-1111-1111-111111111111","name":"Contact Us","description":"Website contact","slug":"contact-us","createdBy":"admin"}'
+  -d '{"subscriberId":1,"name":"Contact Us","description":"Website contact","slug":"contact-us","createdBy":"admin"}'
 
 # Restaurant-specific form (optional restaurantId):
-# -d '{"subscriberId":"...","restaurantId":"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa","name":"Local Survey","slug":"local-survey"}'
+# -d '{"subscriberId":1,"restaurantId":10,"name":"Local Survey","slug":"local-survey"}'
 
 # 2. Add field (replace FORM_ID and SUBSCRIBER_ID)
 curl -X POST "http://localhost:8080/api/forms/FORM_ID/fields?subscriberId=SUBSCRIBER_ID" \

@@ -9,8 +9,8 @@ namespace Vendo.FormBuilder.Application.Forms.Commands.CreateFormVersion;
 
 public sealed record CreateFormVersionCommand(
     Guid FormId,
-    Guid SubscriberId,
-    Guid? RestaurantId = null,
+    int SubscriberId,
+    int? RestaurantId = null,
     string? CreatedBy = null) : IRequest<FormDetailDto>;
 
 public sealed class CreateFormVersionCommandHandler : IRequestHandler<CreateFormVersionCommand, FormDetailDto>

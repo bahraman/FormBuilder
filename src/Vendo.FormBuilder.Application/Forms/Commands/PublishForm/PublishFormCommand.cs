@@ -8,8 +8,8 @@ namespace Vendo.FormBuilder.Application.Forms.Commands.PublishForm;
 
 public sealed record PublishFormCommand(
     Guid FormId,
-    Guid SubscriberId,
-    Guid? RestaurantId = null,
+    int SubscriberId,
+    int? RestaurantId = null,
     string? UpdatedBy = null) : IRequest<FormDetailDto>;
 
 public sealed class PublishFormCommandHandler : IRequestHandler<PublishFormCommand, FormDetailDto>

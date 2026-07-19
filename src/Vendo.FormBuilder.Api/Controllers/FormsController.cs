@@ -34,8 +34,8 @@ public sealed class FormsController : ControllerBase
     [ProducesResponseType(typeof(PagedResult<FormSummaryDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<PagedResult<FormSummaryDto>>> GetForms(
-        [FromQuery] Guid subscriberId,
-        [FromQuery] Guid? restaurantId = null,
+        [FromQuery] int subscriberId,
+        [FromQuery] int? restaurantId = null,
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 20,
         [FromQuery] string? search = null,
@@ -57,8 +57,8 @@ public sealed class FormsController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<FormDetailDto>> GetFormById(
         Guid formId,
-        [FromQuery] Guid subscriberId,
-        [FromQuery] Guid? restaurantId = null,
+        [FromQuery] int subscriberId,
+        [FromQuery] int? restaurantId = null,
         CancellationToken cancellationToken = default)
     {
         var result = await _sender.Send(
@@ -103,9 +103,9 @@ public sealed class FormsController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<FormDetailDto>> UpdateForm(
         Guid formId,
-        [FromQuery] Guid subscriberId,
+        [FromQuery] int subscriberId,
         [FromBody] UpdateFormRequest request,
-        [FromQuery] Guid? restaurantId = null,
+        [FromQuery] int? restaurantId = null,
         CancellationToken cancellationToken = default)
     {
         var result = await _sender.Send(
@@ -131,9 +131,9 @@ public sealed class FormsController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<FormDetailDto>> PublishForm(
         Guid formId,
-        [FromQuery] Guid subscriberId,
+        [FromQuery] int subscriberId,
         [FromBody] ActorRequest? request,
-        [FromQuery] Guid? restaurantId = null,
+        [FromQuery] int? restaurantId = null,
         CancellationToken cancellationToken = default)
     {
         var result = await _sender.Send(
@@ -152,9 +152,9 @@ public sealed class FormsController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<FormDetailDto>> ArchiveForm(
         Guid formId,
-        [FromQuery] Guid subscriberId,
+        [FromQuery] int subscriberId,
         [FromBody] ActorRequest? request,
-        [FromQuery] Guid? restaurantId = null,
+        [FromQuery] int? restaurantId = null,
         CancellationToken cancellationToken = default)
     {
         var result = await _sender.Send(
@@ -173,9 +173,9 @@ public sealed class FormsController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<FormDetailDto>> CreateFormVersion(
         Guid formId,
-        [FromQuery] Guid subscriberId,
+        [FromQuery] int subscriberId,
         [FromBody] ActorRequest? request,
-        [FromQuery] Guid? restaurantId = null,
+        [FromQuery] int? restaurantId = null,
         CancellationToken cancellationToken = default)
     {
         var result = await _sender.Send(
@@ -196,8 +196,8 @@ public sealed class FormsController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteForm(
         Guid formId,
-        [FromQuery] Guid subscriberId,
-        [FromQuery] Guid? restaurantId = null,
+        [FromQuery] int subscriberId,
+        [FromQuery] int? restaurantId = null,
         [FromQuery] string? deletedBy = null,
         CancellationToken cancellationToken = default)
     {
@@ -209,11 +209,11 @@ public sealed class FormsController : ControllerBase
 }
 
 public sealed record CreateFormRequest(
-    Guid SubscriberId,
+    int SubscriberId,
     string Name,
     string? Description,
     string Slug,
-    Guid? RestaurantId = null,
+    int? RestaurantId = null,
     string? CreatedBy = null);
 
 public sealed record UpdateFormRequest(string Name, string? Description, string RowVersion, string? UpdatedBy = null);

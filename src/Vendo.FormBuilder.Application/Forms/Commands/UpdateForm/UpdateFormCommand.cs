@@ -8,8 +8,8 @@ namespace Vendo.FormBuilder.Application.Forms.Commands.UpdateForm;
 
 public sealed record UpdateFormCommand(
     Guid FormId,
-    Guid SubscriberId,
-    Guid? RestaurantId,
+    int SubscriberId,
+    int? RestaurantId,
     string Name,
     string? Description,
     string RowVersion,

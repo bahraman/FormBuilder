@@ -6,7 +6,7 @@ namespace Vendo.FormBuilder.UnitTests.Application;
 public sealed class CreateFormCommandValidatorTests
 {
     private readonly CreateFormCommandValidator _validator = new();
-    private static readonly Guid SubscriberId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+    private const int SubscriberId = 1;
 
     [Fact]
     public void Validate_WithValidCommand_ShouldPass()
@@ -21,7 +21,7 @@ public sealed class CreateFormCommandValidatorTests
     [Fact]
     public void Validate_WithoutSubscriberId_ShouldFail()
     {
-        var command = new CreateFormCommand(Guid.Empty, null, "Name", null, "slug");
+        var command = new CreateFormCommand(0, null, "Name", null, "slug");
 
         var result = _validator.Validate(command);
 
