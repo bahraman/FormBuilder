@@ -1,8 +1,8 @@
+using Vendo.FormBuilder.Application.Common.Forms;
 using Vendo.FormBuilder.Application.Common.Mappings;
 using Vendo.FormBuilder.Application.Responses.Dtos;
 using Vendo.FormBuilder.Application.Responses.Services;
 using Vendo.FormBuilder.Domain.Entities;
-using Vendo.FormBuilder.Domain.Exceptions;
 using Vendo.FormBuilder.Domain.Interfaces;
 using MediatR;
 
@@ -10,6 +10,8 @@ namespace Vendo.FormBuilder.Application.Responses.Commands.SubmitFormResponse;
 
 public sealed record SubmitFormResponseCommand(
     Guid FormId,
+    Guid SubscriberId,
+    Guid? RestaurantId,
     IReadOnlyList<FormResponseValueInputDto> Values,
     string? SubmittedBy = null,
     string? IpAddress = null,
@@ -33,8 +35,13 @@ public sealed class SubmitFormResponseCommandHandler : IRequestHandler<SubmitFor
 
     public async Task<FormResponseDto> Handle(SubmitFormResponseCommand request, CancellationToken cancellationToken)
     {
-        var form = await _formRepository.GetByIdWithDetailsAsync(request.FormId, cancellationToken)
-            ?? throw new NotFoundException(nameof(Form), request.FormId);
+        var form = await FormAccess.GetAccessibleFormAsync(
+            _formRepository,
+            request.FormId,
+            request.SubscriberId,
+            request.RestaurantId,
+            withDetails: true,
+            cancellationToken);
 
         form.EnsureAcceptsSubmissions();
         FormResponseValidator.Validate(form, request.Values);

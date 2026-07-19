@@ -31,12 +31,16 @@ public sealed class FormFieldsController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<FormFieldDto>> AddField(
         Guid formId,
+        [FromQuery] Guid subscriberId,
         [FromBody] AddFormFieldRequest request,
-        CancellationToken cancellationToken)
+        [FromQuery] Guid? restaurantId = null,
+        CancellationToken cancellationToken = default)
     {
         var result = await _sender.Send(
             new AddFormFieldCommand(
                 formId,
+                subscriberId,
+                restaurantId,
                 request.Name,
                 request.Label,
                 request.FieldType,
@@ -53,7 +57,7 @@ public sealed class FormFieldsController : ControllerBase
         return CreatedAtAction(
             nameof(FormsController.GetFormById),
             "Forms",
-            new { formId },
+            new { formId, subscriberId, restaurantId },
             result);
     }
 
@@ -67,13 +71,17 @@ public sealed class FormFieldsController : ControllerBase
     public async Task<ActionResult<FormFieldDto>> UpdateField(
         Guid formId,
         Guid fieldId,
+        [FromQuery] Guid subscriberId,
         [FromBody] UpdateFormFieldRequest request,
-        CancellationToken cancellationToken)
+        [FromQuery] Guid? restaurantId = null,
+        CancellationToken cancellationToken = default)
     {
         var result = await _sender.Send(
             new UpdateFormFieldCommand(
                 formId,
                 fieldId,
+                subscriberId,
+                restaurantId,
                 request.Label,
                 request.IsRequired,
                 request.Placeholder,
@@ -97,10 +105,14 @@ public sealed class FormFieldsController : ControllerBase
     public async Task<IActionResult> DeleteField(
         Guid formId,
         Guid fieldId,
+        [FromQuery] Guid subscriberId,
+        [FromQuery] Guid? restaurantId = null,
         [FromQuery] string? deletedBy = null,
         CancellationToken cancellationToken = default)
     {
-        await _sender.Send(new DeleteFormFieldCommand(formId, fieldId, deletedBy), cancellationToken);
+        await _sender.Send(
+            new DeleteFormFieldCommand(formId, fieldId, subscriberId, restaurantId, deletedBy),
+            cancellationToken);
         return NoContent();
     }
 
@@ -113,11 +125,18 @@ public sealed class FormFieldsController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<FormDetailDto>> ReorderFields(
         Guid formId,
+        [FromQuery] Guid subscriberId,
         [FromBody] ReorderFormFieldsRequest request,
-        CancellationToken cancellationToken)
+        [FromQuery] Guid? restaurantId = null,
+        CancellationToken cancellationToken = default)
     {
         var result = await _sender.Send(
-            new ReorderFormFieldsCommand(formId, request.FieldOrders, request.UpdatedBy),
+            new ReorderFormFieldsCommand(
+                formId,
+                subscriberId,
+                restaurantId,
+                request.FieldOrders,
+                request.UpdatedBy),
             cancellationToken);
 
         return Ok(result);

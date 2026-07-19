@@ -1,6 +1,6 @@
+using Vendo.FormBuilder.Application.Common.Forms;
 using Vendo.FormBuilder.Application.Common.Mappings;
 using Vendo.FormBuilder.Application.Forms.Dtos;
-using Vendo.FormBuilder.Domain.Exceptions;
 using Vendo.FormBuilder.Domain.Interfaces;
 using MediatR;
 
@@ -8,6 +8,8 @@ namespace Vendo.FormBuilder.Application.Forms.Commands.UpdateForm;
 
 public sealed record UpdateFormCommand(
     Guid FormId,
+    Guid SubscriberId,
+    Guid? RestaurantId,
     string Name,
     string? Description,
     string RowVersion,
@@ -26,8 +28,13 @@ public sealed class UpdateFormCommandHandler : IRequestHandler<UpdateFormCommand
 
     public async Task<FormDetailDto> Handle(UpdateFormCommand request, CancellationToken cancellationToken)
     {
-        var form = await _formRepository.GetByIdWithDetailsAsync(request.FormId, cancellationToken)
-            ?? throw new NotFoundException(nameof(Domain.Entities.Form), request.FormId);
+        var form = await FormAccess.GetAccessibleFormAsync(
+            _formRepository,
+            request.FormId,
+            request.SubscriberId,
+            request.RestaurantId,
+            withDetails: true,
+            cancellationToken);
 
         form.Update(request.Name, request.Description, request.UpdatedBy);
         form.RowVersion = Convert.FromBase64String(request.RowVersion);

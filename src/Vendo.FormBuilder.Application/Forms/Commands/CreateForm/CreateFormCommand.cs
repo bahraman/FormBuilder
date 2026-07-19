@@ -1,5 +1,6 @@
 using Vendo.FormBuilder.Application.Common.Mappings;
 using Vendo.FormBuilder.Application.Forms.Dtos;
+using Vendo.FormBuilder.Domain.Common;
 using Vendo.FormBuilder.Domain.Entities;
 using Vendo.FormBuilder.Domain.Exceptions;
 using Vendo.FormBuilder.Domain.Interfaces;
@@ -8,6 +9,8 @@ using MediatR;
 namespace Vendo.FormBuilder.Application.Forms.Commands.CreateForm;
 
 public sealed record CreateFormCommand(
+    Guid SubscriberId,
+    Guid? RestaurantId,
     string Name,
     string? Description,
     string Slug,
@@ -26,14 +29,27 @@ public sealed class CreateFormCommandHandler : IRequestHandler<CreateFormCommand
 
     public async Task<FormDetailDto> Handle(CreateFormCommand request, CancellationToken cancellationToken)
     {
+        var tenant = TenantScope.ForSubscriber(request.SubscriberId, request.RestaurantId);
         var slug = request.Slug.Trim().ToLowerInvariant();
 
-        if (await _formRepository.SlugExistsAsync(slug, cancellationToken: cancellationToken))
+        if (await _formRepository.SlugExistsAsync(
+                tenant.SubscriberId,
+                tenant.RestaurantId,
+                slug,
+                cancellationToken: cancellationToken))
         {
-            throw new ConflictException($"A form with slug '{slug}' already exists.");
+            throw new ConflictException(
+                $"A form with slug '{slug}' already exists for this subscriber/restaurant scope.");
         }
 
-        var form = Form.Create(request.Name, request.Description, slug, request.CreatedBy);
+        var form = Form.Create(
+            tenant.SubscriberId,
+            tenant.RestaurantId,
+            request.Name,
+            request.Description,
+            slug,
+            request.CreatedBy);
+
         await _formRepository.AddAsync(form, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 

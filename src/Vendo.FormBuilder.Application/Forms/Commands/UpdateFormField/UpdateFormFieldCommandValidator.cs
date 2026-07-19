@@ -8,6 +8,10 @@ public sealed class UpdateFormFieldCommandValidator : AbstractValidator<UpdateFo
     {
         RuleFor(x => x.FormId).NotEmpty();
         RuleFor(x => x.FieldId).NotEmpty();
+        RuleFor(x => x.SubscriberId).NotEmpty().WithMessage("SubscriberId is required.");
+        RuleFor(x => x.RestaurantId)
+            .Must(id => id is null || id != Guid.Empty)
+            .WithMessage("RestaurantId cannot be an empty GUID.");
         RuleFor(x => x.Label).NotEmpty().MaximumLength(200);
         RuleFor(x => x.Placeholder).MaximumLength(500);
         RuleFor(x => x.HelpText).MaximumLength(1000);

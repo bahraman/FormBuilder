@@ -36,11 +36,33 @@ Api → Application → Domain
 - Unlimited fields per form with reorder support
 - Validation rules and selectable options
 - Submit and retrieve form responses
+- Multi-tenant ownership (`SubscriberId` required, `RestaurantId` optional)
 - Pagination & filtering
 - Optimistic concurrency (`RowVersion`)
 - Soft delete + global query filters
 - ProblemDetails error responses
 - Async APIs throughout
+
+## Multi-Tenant Form Ownership
+
+Every form is owned by a subscriber and optionally a restaurant:
+
+| Field | Required | Behavior |
+|-------|----------|----------|
+| `SubscriberId` | Yes | Form always belongs to one subscriber. Cross-subscriber access is denied. |
+| `RestaurantId` | No | `null` = subscriber-level (shared across that subscriber's restaurants). Set = restaurant-specific and isolated from other restaurants. |
+
+Access rules:
+
+- A subscriber cannot access forms belonging to another subscriber.
+- When `restaurantId` is supplied on read/write APIs, results include that restaurant's forms **plus** subscriber-level shared forms (`RestaurantId = null`).
+- Restaurant-specific forms are not visible to other restaurants of the same subscriber.
+- Omitting `restaurantId` is a subscriber-wide scope (can manage all forms for that subscriber).
+
+Tenant scope is passed as:
+
+- **Create**: `subscriberId` / `restaurantId` in the request body (ownership)
+- **All other endpoints**: required query param `subscriberId`, optional `restaurantId`
 
 ## Out of Scope (v1)
 
@@ -104,33 +126,36 @@ dotnet test
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `GET` | `/api/forms` | List forms (page, search, status) |
-| `GET` | `/api/forms/{id}` | Get form with fields |
-| `POST` | `/api/forms` | Create draft form |
-| `PUT` | `/api/forms/{id}` | Update draft form |
-| `POST` | `/api/forms/{id}/publish` | Publish form |
-| `POST` | `/api/forms/{id}/archive` | Archive form |
-| `POST` | `/api/forms/{id}/versions` | Create next draft version |
-| `DELETE` | `/api/forms/{id}` | Soft-delete form |
-| `POST` | `/api/forms/{id}/fields` | Add field |
-| `PUT` | `/api/forms/{id}/fields/{fieldId}` | Update field |
-| `DELETE` | `/api/forms/{id}/fields/{fieldId}` | Soft-delete field |
-| `PUT` | `/api/forms/{id}/fields/reorder` | Reorder fields |
-| `POST` | `/api/forms/{id}/responses` | Submit response |
-| `GET` | `/api/forms/{id}/responses` | List responses |
-| `GET` | `/api/responses/{id}` | Get response by id |
+| `GET` | `/api/forms?subscriberId=` | List forms (page, search, status, optional `restaurantId`) |
+| `GET` | `/api/forms/{id}?subscriberId=` | Get form with fields |
+| `POST` | `/api/forms` | Create draft form (`subscriberId` required in body) |
+| `PUT` | `/api/forms/{id}?subscriberId=` | Update draft form |
+| `POST` | `/api/forms/{id}/publish?subscriberId=` | Publish form |
+| `POST` | `/api/forms/{id}/archive?subscriberId=` | Archive form |
+| `POST` | `/api/forms/{id}/versions?subscriberId=` | Create next draft version |
+| `DELETE` | `/api/forms/{id}?subscriberId=` | Soft-delete form |
+| `POST` | `/api/forms/{id}/fields?subscriberId=` | Add field |
+| `PUT` | `/api/forms/{id}/fields/{fieldId}?subscriberId=` | Update field |
+| `DELETE` | `/api/forms/{id}/fields/{fieldId}?subscriberId=` | Soft-delete field |
+| `PUT` | `/api/forms/{id}/fields/reorder?subscriberId=` | Reorder fields |
+| `POST` | `/api/forms/{id}/responses?subscriberId=` | Submit response |
+| `GET` | `/api/forms/{id}/responses?subscriberId=` | List responses |
+| `GET` | `/api/responses/{id}?subscriberId=` | Get response by id |
 | `GET` | `/api/health` | Health check |
 
 ### Example: Create form → add field → publish → submit
 
 ```bash
-# 1. Create form
+# 1. Create subscriber-level form (shared across restaurants)
 curl -X POST http://localhost:8080/api/forms \
   -H "Content-Type: application/json" \
-  -d '{"name":"Contact Us","description":"Website contact","slug":"contact-us","createdBy":"admin"}'
+  -d '{"subscriberId":"11111111-1111-1111-1111-111111111111","name":"Contact Us","description":"Website contact","slug":"contact-us","createdBy":"admin"}'
 
-# 2. Add field (replace FORM_ID)
-curl -X POST http://localhost:8080/api/forms/FORM_ID/fields \
+# Restaurant-specific form (optional restaurantId):
+# -d '{"subscriberId":"...","restaurantId":"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa","name":"Local Survey","slug":"local-survey"}'
+
+# 2. Add field (replace FORM_ID and SUBSCRIBER_ID)
+curl -X POST "http://localhost:8080/api/forms/FORM_ID/fields?subscriberId=SUBSCRIBER_ID" \
   -H "Content-Type: application/json" \
   -d '{
     "name":"email",
@@ -142,12 +167,12 @@ curl -X POST http://localhost:8080/api/forms/FORM_ID/fields \
   }'
 
 # 3. Publish
-curl -X POST http://localhost:8080/api/forms/FORM_ID/publish \
+curl -X POST "http://localhost:8080/api/forms/FORM_ID/publish?subscriberId=SUBSCRIBER_ID" \
   -H "Content-Type: application/json" \
   -d '{"actor":"admin"}'
 
 # 4. Submit response (replace FIELD_ID)
-curl -X POST http://localhost:8080/api/forms/FORM_ID/responses \
+curl -X POST "http://localhost:8080/api/forms/FORM_ID/responses?subscriberId=SUBSCRIBER_ID" \
   -H "Content-Type: application/json" \
   -d '{
     "submittedBy":"user@example.com",
@@ -157,10 +182,12 @@ curl -X POST http://localhost:8080/api/forms/FORM_ID/responses \
 
 ## Design Notes
 
+- **Multi-tenant ownership**: `SubscriberId` is required; `RestaurantId` is optional (`null` = shared at subscriber level).
 - **Draft-only edits**: Published/archived forms are immutable; create a new version to change structure.
 - **Optimistic concurrency**: Send `rowVersion` (Base64) on update endpoints.
 - **Soft delete**: Entities are marked deleted and excluded via EF global query filters.
 - **Response validation**: Required rules, type checks, option membership, min/max, and regex are enforced at submission time.
+- **Slug uniqueness**: Scoped per `(SubscriberId, RestaurantId, Slug, Version)`.
 
 ## Solution Structure
 

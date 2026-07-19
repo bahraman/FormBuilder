@@ -1,7 +1,7 @@
+using Vendo.FormBuilder.Application.Common.Forms;
 using Vendo.FormBuilder.Application.Common.Mappings;
 using Vendo.FormBuilder.Application.Forms.Dtos;
 using Vendo.FormBuilder.Domain.Enums;
-using Vendo.FormBuilder.Domain.Exceptions;
 using Vendo.FormBuilder.Domain.Interfaces;
 using MediatR;
 
@@ -9,6 +9,8 @@ namespace Vendo.FormBuilder.Application.Forms.Commands.AddFormField;
 
 public sealed record AddFormFieldCommand(
     Guid FormId,
+    Guid SubscriberId,
+    Guid? RestaurantId,
     string Name,
     string Label,
     FieldType FieldType,
@@ -34,8 +36,13 @@ public sealed class AddFormFieldCommandHandler : IRequestHandler<AddFormFieldCom
 
     public async Task<FormFieldDto> Handle(AddFormFieldCommand request, CancellationToken cancellationToken)
     {
-        var form = await _formRepository.GetByIdWithDetailsAsync(request.FormId, cancellationToken)
-            ?? throw new NotFoundException(nameof(Domain.Entities.Form), request.FormId);
+        var form = await FormAccess.GetAccessibleFormAsync(
+            _formRepository,
+            request.FormId,
+            request.SubscriberId,
+            request.RestaurantId,
+            withDetails: true,
+            cancellationToken);
 
         var field = form.AddField(
             request.Name,

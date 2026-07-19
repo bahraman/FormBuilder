@@ -1,31 +1,49 @@
 @host = http://localhost:8080
+@subscriberId = 11111111-1111-1111-1111-111111111111
+@restaurantId = aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
 @formId = 00000000-0000-0000-0000-000000000000
 @fieldId = 00000000-0000-0000-0000-000000000000
 @responseId = 00000000-0000-0000-0000-000000000000
-@rowVersion = AAAA
 
 ### Health
 GET {{host}}/api/health
 
-### List forms
-GET {{host}}/api/forms?pageNumber=1&pageSize=20
+### List forms for subscriber (all restaurants + shared)
+GET {{host}}/api/forms?subscriberId={{subscriberId}}&pageNumber=1&pageSize=20
 
-### Create form
+### List forms visible to a restaurant (restaurant-specific + shared)
+GET {{host}}/api/forms?subscriberId={{subscriberId}}&restaurantId={{restaurantId}}&pageNumber=1&pageSize=20
+
+### Create subscriber-level form (RestaurantId null = shared)
 POST {{host}}/api/forms
 Content-Type: application/json
 
 {
+  "subscriberId": "{{subscriberId}}",
   "name": "Contact Us",
-  "description": "Website contact form",
+  "description": "Shared across restaurants",
   "slug": "contact-us",
   "createdBy": "admin"
 }
 
+### Create restaurant-specific form
+POST {{host}}/api/forms
+Content-Type: application/json
+
+{
+  "subscriberId": "{{subscriberId}}",
+  "restaurantId": "{{restaurantId}}",
+  "name": "Local Feedback",
+  "description": "Only for one restaurant",
+  "slug": "local-feedback",
+  "createdBy": "admin"
+}
+
 ### Get form
-GET {{host}}/api/forms/{{formId}}
+GET {{host}}/api/forms/{{formId}}?subscriberId={{subscriberId}}
 
 ### Add text field
-POST {{host}}/api/forms/{{formId}}/fields
+POST {{host}}/api/forms/{{formId}}/fields?subscriberId={{subscriberId}}
 Content-Type: application/json
 
 {
@@ -41,24 +59,8 @@ Content-Type: application/json
   ]
 }
 
-### Add dropdown field
-POST {{host}}/api/forms/{{formId}}/fields
-Content-Type: application/json
-
-{
-  "name": "topic",
-  "label": "Topic",
-  "fieldType": "Dropdown",
-  "displayOrder": 1,
-  "isRequired": true,
-  "options": [
-    { "label": "Sales", "value": "sales", "displayOrder": 0, "isDefault": true },
-    { "label": "Support", "value": "support", "displayOrder": 1, "isDefault": false }
-  ]
-}
-
 ### Publish form
-POST {{host}}/api/forms/{{formId}}/publish
+POST {{host}}/api/forms/{{formId}}/publish?subscriberId={{subscriberId}}
 Content-Type: application/json
 
 {
@@ -66,7 +68,7 @@ Content-Type: application/json
 }
 
 ### Submit response
-POST {{host}}/api/forms/{{formId}}/responses
+POST {{host}}/api/forms/{{formId}}/responses?subscriberId={{subscriberId}}&restaurantId={{restaurantId}}
 Content-Type: application/json
 
 {
@@ -77,13 +79,13 @@ Content-Type: application/json
 }
 
 ### List responses
-GET {{host}}/api/forms/{{formId}}/responses?pageNumber=1&pageSize=20
+GET {{host}}/api/forms/{{formId}}/responses?subscriberId={{subscriberId}}&pageNumber=1&pageSize=20
 
 ### Get response
-GET {{host}}/api/responses/{{responseId}}
+GET {{host}}/api/responses/{{responseId}}?subscriberId={{subscriberId}}
 
 ### Create new version
-POST {{host}}/api/forms/{{formId}}/versions
+POST {{host}}/api/forms/{{formId}}/versions?subscriberId={{subscriberId}}
 Content-Type: application/json
 
 {

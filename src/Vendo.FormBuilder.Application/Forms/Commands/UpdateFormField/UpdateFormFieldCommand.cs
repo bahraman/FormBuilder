@@ -1,3 +1,4 @@
+using Vendo.FormBuilder.Application.Common.Forms;
 using Vendo.FormBuilder.Application.Common.Mappings;
 using Vendo.FormBuilder.Application.Forms.Dtos;
 using Vendo.FormBuilder.Domain.Exceptions;
@@ -9,6 +10,8 @@ namespace Vendo.FormBuilder.Application.Forms.Commands.UpdateFormField;
 public sealed record UpdateFormFieldCommand(
     Guid FormId,
     Guid FieldId,
+    Guid SubscriberId,
+    Guid? RestaurantId,
     string Label,
     bool IsRequired,
     string? Placeholder,
@@ -32,8 +35,13 @@ public sealed class UpdateFormFieldCommandHandler : IRequestHandler<UpdateFormFi
 
     public async Task<FormFieldDto> Handle(UpdateFormFieldCommand request, CancellationToken cancellationToken)
     {
-        var form = await _formRepository.GetByIdWithDetailsAsync(request.FormId, cancellationToken)
-            ?? throw new NotFoundException(nameof(Domain.Entities.Form), request.FormId);
+        var form = await FormAccess.GetAccessibleFormAsync(
+            _formRepository,
+            request.FormId,
+            request.SubscriberId,
+            request.RestaurantId,
+            withDetails: true,
+            cancellationToken);
 
         if (form.Status != Domain.Enums.FormStatus.Draft)
         {
@@ -70,4 +78,3 @@ public sealed class UpdateFormFieldCommandHandler : IRequestHandler<UpdateFormFi
         return field.ToDto();
     }
 }
-

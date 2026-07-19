@@ -1,7 +1,7 @@
+using Vendo.FormBuilder.Application.Common.Forms;
 using Vendo.FormBuilder.Application.Common.Mappings;
 using Vendo.FormBuilder.Application.Common.Models;
 using Vendo.FormBuilder.Application.Responses.Dtos;
-using Vendo.FormBuilder.Domain.Exceptions;
 using Vendo.FormBuilder.Domain.Interfaces;
 using MediatR;
 
@@ -9,6 +9,8 @@ namespace Vendo.FormBuilder.Application.Responses.Queries.GetFormResponses;
 
 public sealed record GetFormResponsesQuery(
     Guid FormId,
+    Guid SubscriberId,
+    Guid? RestaurantId = null,
     int PageNumber = 1,
     int PageSize = 20) : IRequest<PagedResult<FormResponseDto>>;
 
@@ -29,8 +31,14 @@ public sealed class GetFormResponsesQueryHandler : IRequestHandler<GetFormRespon
         GetFormResponsesQuery request,
         CancellationToken cancellationToken)
     {
-        _ = await _formRepository.GetByIdAsync(request.FormId, cancellationToken)
-            ?? throw new NotFoundException(nameof(Domain.Entities.Form), request.FormId);
+        // Enforce tenant isolation before returning any responses.
+        _ = await FormAccess.GetAccessibleFormAsync(
+            _formRepository,
+            request.FormId,
+            request.SubscriberId,
+            request.RestaurantId,
+            withDetails: false,
+            cancellationToken);
 
         var pagination = new PaginationQuery
         {

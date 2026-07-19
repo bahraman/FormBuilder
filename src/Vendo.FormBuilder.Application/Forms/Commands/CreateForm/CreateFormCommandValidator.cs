@@ -6,6 +6,14 @@ public sealed class CreateFormCommandValidator : AbstractValidator<CreateFormCom
 {
     public CreateFormCommandValidator()
     {
+        RuleFor(x => x.SubscriberId)
+            .NotEmpty()
+            .WithMessage("SubscriberId is required.");
+
+        RuleFor(x => x.RestaurantId)
+            .Must(id => id is null || id != Guid.Empty)
+            .WithMessage("RestaurantId cannot be an empty GUID. Omit it for subscriber-level forms.");
+
         RuleFor(x => x.Name)
             .NotEmpty()
             .MaximumLength(200);

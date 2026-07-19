@@ -21,7 +21,7 @@ public sealed class FormResponsesController : ControllerBase
     }
 
     /// <summary>
-    /// Submit a response to a published form.
+    /// Submit a response to a published form within the caller's tenant scope.
     /// </summary>
     [HttpPost("forms/{formId:guid}/responses")]
     [ProducesResponseType(typeof(FormResponseDto), StatusCodes.Status201Created)]
@@ -30,51 +30,64 @@ public sealed class FormResponsesController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<FormResponseDto>> SubmitResponse(
         Guid formId,
+        [FromQuery] Guid subscriberId,
         [FromBody] SubmitFormResponseRequest request,
-        CancellationToken cancellationToken)
+        [FromQuery] Guid? restaurantId = null,
+        CancellationToken cancellationToken = default)
     {
         var result = await _sender.Send(
             new SubmitFormResponseCommand(
                 formId,
+                subscriberId,
+                restaurantId,
                 request.Values,
                 request.SubmittedBy,
                 HttpContext.Connection.RemoteIpAddress?.ToString(),
                 Request.Headers.UserAgent.ToString()),
             cancellationToken);
 
-        return CreatedAtAction(nameof(GetResponseById), new { responseId = result.Id }, result);
+        return CreatedAtAction(
+            nameof(GetResponseById),
+            new { responseId = result.Id, subscriberId, restaurantId },
+            result);
     }
 
     /// <summary>
-    /// Get paginated responses for a form.
+    /// Get paginated responses for a form within the caller's tenant scope.
     /// </summary>
     [HttpGet("forms/{formId:guid}/responses")]
     [ProducesResponseType(typeof(PagedResult<FormResponseDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<PagedResult<FormResponseDto>>> GetResponses(
         Guid formId,
+        [FromQuery] Guid subscriberId,
+        [FromQuery] Guid? restaurantId = null,
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 20,
         CancellationToken cancellationToken = default)
     {
         var result = await _sender.Send(
-            new GetFormResponsesQuery(formId, pageNumber, pageSize),
+            new GetFormResponsesQuery(formId, subscriberId, restaurantId, pageNumber, pageSize),
             cancellationToken);
 
         return Ok(result);
     }
 
     /// <summary>
-    /// Get a single form response by id.
+    /// Get a single form response by id within the caller's tenant scope.
     /// </summary>
     [HttpGet("responses/{responseId:guid}")]
     [ProducesResponseType(typeof(FormResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<FormResponseDto>> GetResponseById(
         Guid responseId,
-        CancellationToken cancellationToken)
+        [FromQuery] Guid subscriberId,
+        [FromQuery] Guid? restaurantId = null,
+        CancellationToken cancellationToken = default)
     {
-        var result = await _sender.Send(new GetFormResponseByIdQuery(responseId), cancellationToken);
+        var result = await _sender.Send(
+            new GetFormResponseByIdQuery(responseId, subscriberId, restaurantId),
+            cancellationToken);
         return Ok(result);
     }
 }
