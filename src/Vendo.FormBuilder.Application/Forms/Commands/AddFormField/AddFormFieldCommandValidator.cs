@@ -1,4 +1,5 @@
 using FluentValidation;
+using Vendo.FormBuilder.Application.Common.Validation;
 using Vendo.FormBuilder.Domain.Enums;
 
 namespace Vendo.FormBuilder.Application.Forms.Commands.AddFormField;
@@ -8,12 +9,8 @@ public sealed class AddFormFieldCommandValidator : AbstractValidator<AddFormFiel
     public AddFormFieldCommandValidator()
     {
         RuleFor(x => x.FormId).NotEmpty();
-        RuleFor(x => x.SubscriberId)
-            .GreaterThan(0)
-            .WithMessage("SubscriberId is required and must be a positive integer.");
-        RuleFor(x => x.RestaurantId)
-            .Must(id => id is null || id > 0)
-            .WithMessage("RestaurantId must be a positive integer when provided.");
+        RuleFor(x => x.SubscriberId).RequiredSubscriberId();
+        RuleFor(x => x.RestaurantId).OptionalRestaurantId();
         RuleFor(x => x.Name).NotEmpty().MaximumLength(100)
             .Matches("^[a-zA-Z][a-zA-Z0-9_]*$")
             .WithMessage("Field name must start with a letter and contain only letters, numbers, and underscores.");

@@ -27,9 +27,17 @@ public sealed class TenantScopeTests
     }
 
     [Fact]
-    public void ForSubscriber_WithNonPositiveRestaurant_ShouldThrow()
+    public void ForSubscriber_WithZeroRestaurant_ShouldTreatAsSubscriberLevel()
     {
-        var act = () => TenantScope.ForSubscriber(SubscriberA, 0);
+        var scope = TenantScope.ForSubscriber(SubscriberA, 0);
+
+        scope.RestaurantId.Should().BeNull();
+    }
+
+    [Fact]
+    public void ForSubscriber_WithNegativeRestaurant_ShouldThrow()
+    {
+        var act = () => TenantScope.ForSubscriber(SubscriberA, -1);
 
         act.Should().Throw<DomainException>();
     }

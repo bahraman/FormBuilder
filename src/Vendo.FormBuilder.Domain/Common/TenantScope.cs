@@ -5,7 +5,7 @@ namespace Vendo.FormBuilder.Domain.Common;
 /// <summary>
 /// Multi-tenant ownership scope for forms.
 /// SubscriberId is always required. RestaurantId is optional:
-/// null = subscriber-level (shared across restaurants); set = restaurant-specific.
+/// null (or 0) = subscriber-level (shared across restaurants); positive = restaurant-specific.
 /// </summary>
 public readonly record struct TenantScope(int SubscriberId, int? RestaurantId)
 {
@@ -16,13 +16,20 @@ public readonly record struct TenantScope(int SubscriberId, int? RestaurantId)
             throw new DomainException("SubscriberId is required and must be a positive integer.");
         }
 
-        if (restaurantId is <= 0)
+        // 0 is treated as "not set" (subscriber-level), matching common API clients.
+        restaurantId = NormalizeRestaurantId(restaurantId);
+
+        if (restaurantId is < 0)
         {
-            throw new DomainException("RestaurantId must be a positive integer when provided. Omit it for subscriber-level forms.");
+            throw new DomainException("RestaurantId must be a positive integer when provided. Use null or 0 for subscriber-level forms.");
         }
 
         return new TenantScope(subscriberId, restaurantId);
     }
+
+    /// <summary>Maps 0 to null so clients can send restaurantId: 0 for subscriber-level forms.</summary>
+    public static int? NormalizeRestaurantId(int? restaurantId) =>
+        restaurantId is null or 0 ? null : restaurantId;
 
     /// <summary>
     /// Returns true when this scope may access a form owned by the given tenant.

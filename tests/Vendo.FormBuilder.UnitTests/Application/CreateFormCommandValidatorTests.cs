@@ -29,6 +29,16 @@ public sealed class CreateFormCommandValidatorTests
         result.Errors.Should().Contain(e => e.PropertyName == nameof(CreateFormCommand.SubscriberId));
     }
 
+    [Fact]
+    public void Validate_WithRestaurantIdZero_ShouldPass_AsSubscriberLevel()
+    {
+        var command = new CreateFormCommand(SubscriberId, 0, "فرم استخدام", "استخدام", "s");
+
+        var result = _validator.Validate(command);
+
+        result.IsValid.Should().BeTrue();
+    }
+
     [Theory]
     [InlineData("")]
     [InlineData("Bad Slug")]

@@ -50,7 +50,7 @@ Every form is owned by a subscriber and optionally a restaurant:
 | Field | Required | Behavior |
 |-------|----------|----------|
 | `SubscriberId` | Yes | Form always belongs to one subscriber. Cross-subscriber access is denied. |
-| `RestaurantId` | No | `null` = subscriber-level (shared across that subscriber's restaurants). Set = restaurant-specific and isolated from other restaurants. |
+| `RestaurantId` | No | `null` or `0` = subscriber-level (shared across that subscriber's restaurants). Positive int = restaurant-specific and isolated from other restaurants. |
 
 Access rules:
 
