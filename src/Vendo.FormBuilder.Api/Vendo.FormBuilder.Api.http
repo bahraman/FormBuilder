@@ -1,8 +1,8 @@
 @host = http://localhost:8080
 @subscriberId = 1
 @restaurantId = 10
-@formId = 00000000-0000-0000-0000-000000000000
-@fieldId = 00000000-0000-0000-0000-000000000000
+@formId = 1
+@fieldId = 1
 @responseId = 00000000-0000-0000-0000-000000000000
 
 ### Health

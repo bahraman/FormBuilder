@@ -9,7 +9,7 @@ internal static class FormAccess
 {
     public static async Task<Form> GetAccessibleFormAsync(
         IFormRepository formRepository,
-        Guid formId,
+        long formId,
         int subscriberId,
         int? restaurantId,
         bool withDetails,

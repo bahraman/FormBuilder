@@ -76,7 +76,8 @@ The initial version intentionally does **not** include:
 - Frontend UI
 - Reporting
 
-Optional `createdBy` / `updatedBy` / `submittedBy` strings are audit metadata only — not a user system.
+- Optional `createdBy` / `updatedBy` / `submittedBy` strings are audit metadata only — not a user system.
+- Form and field identifiers (`FormId` / `FieldId`) are `bigint` (`long` in .NET). Response/option/rule ids remain Guid.
 
 ## Supported Field Types
 

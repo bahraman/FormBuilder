@@ -8,7 +8,7 @@ using MediatR;
 namespace Vendo.FormBuilder.Application.Responses.Queries.GetFormResponses;
 
 public sealed record GetFormResponsesQuery(
-    Guid FormId,
+    long FormId,
     int SubscriberId,
     int? RestaurantId = null,
     int PageNumber = 1,

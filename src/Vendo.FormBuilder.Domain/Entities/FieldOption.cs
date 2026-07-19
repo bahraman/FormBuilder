@@ -4,7 +4,7 @@ namespace Vendo.FormBuilder.Domain.Entities;
 
 public class FieldOption : BaseEntity
 {
-    public Guid FormFieldId { get; private set; }
+    public long FormFieldId { get; private set; }
     public FormField? FormField { get; private set; }
     public string Label { get; private set; } = string.Empty;
     public string Value { get; private set; } = string.Empty;
@@ -16,7 +16,7 @@ public class FieldOption : BaseEntity
     }
 
     public static FieldOption Create(
-        Guid formFieldId,
+        long formFieldId,
         string label,
         string value,
         int displayOrder,

@@ -41,7 +41,7 @@ public sealed class ApplicationDbContext : DbContext
         ChangeTracker.DetectChanges();
         NormalizeRowVersionEntityStates();
 
-        foreach (var entry in ChangeTracker.Entries<BaseEntity>())
+        foreach (var entry in ChangeTracker.Entries<AuditableEntity>())
         {
             if (entry.State == EntityState.Modified)
             {
@@ -50,21 +50,16 @@ public sealed class ApplicationDbContext : DbContext
         }
     }
 
-    /// <summary>
-    /// Fixes false optimistic-concurrency failures:
-    /// new aggregate children incorrectly marked Modified (empty original RowVersion),
-    /// and tracked parents whose OriginalValue was cleared.
-    /// </summary>
     private void NormalizeRowVersionEntityStates()
     {
-        foreach (var entry in ChangeTracker.Entries<BaseEntity>().ToList())
+        foreach (var entry in ChangeTracker.Entries<AuditableEntity>().ToList())
         {
             if (entry.State != EntityState.Modified)
             {
                 continue;
             }
 
-            var rowVersionProperty = entry.Property(nameof(BaseEntity.RowVersion));
+            var rowVersionProperty = entry.Property(nameof(AuditableEntity.RowVersion));
             var original = rowVersionProperty.OriginalValue as byte[];
             var current = rowVersionProperty.CurrentValue as byte[];
 
@@ -73,14 +68,12 @@ public sealed class ApplicationDbContext : DbContext
 
             if (originalMissing && currentMissing)
             {
-                // Never persisted. Soft-deleted drafts should not be written; others are inserts.
                 entry.State = entry.Entity.IsDeleted ? EntityState.Detached : EntityState.Added;
                 continue;
             }
 
             if (originalMissing && !currentMissing)
             {
-                // Keep concurrency check against the known token loaded on the entity.
                 rowVersionProperty.OriginalValue = current;
             }
         }
@@ -90,7 +83,7 @@ public sealed class ApplicationDbContext : DbContext
     {
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         {
-            if (!typeof(BaseEntity).IsAssignableFrom(entityType.ClrType))
+            if (!typeof(AuditableEntity).IsAssignableFrom(entityType.ClrType))
             {
                 continue;
             }
@@ -104,7 +97,7 @@ public sealed class ApplicationDbContext : DbContext
     }
 
     private static void SetSoftDeleteFilter<TEntity>(ModelBuilder modelBuilder)
-        where TEntity : BaseEntity
+        where TEntity : AuditableEntity
     {
         modelBuilder.Entity<TEntity>().HasQueryFilter(e => !e.IsDeleted);
     }

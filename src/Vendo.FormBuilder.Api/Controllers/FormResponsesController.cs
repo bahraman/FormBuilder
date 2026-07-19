@@ -23,13 +23,13 @@ public sealed class FormResponsesController : ControllerBase
     /// <summary>
     /// Submit a response to a published form within the caller's tenant scope.
     /// </summary>
-    [HttpPost("forms/{formId:guid}/responses")]
+    [HttpPost("forms/{formId:long}/responses")]
     [ProducesResponseType(typeof(FormResponseDto), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<FormResponseDto>> SubmitResponse(
-        Guid formId,
+        long formId,
         [FromQuery] int subscriberId,
         [FromBody] SubmitFormResponseRequest request,
         [FromQuery] int? restaurantId = null,
@@ -55,11 +55,11 @@ public sealed class FormResponsesController : ControllerBase
     /// <summary>
     /// Get paginated responses for a form within the caller's tenant scope.
     /// </summary>
-    [HttpGet("forms/{formId:guid}/responses")]
+    [HttpGet("forms/{formId:long}/responses")]
     [ProducesResponseType(typeof(PagedResult<FormResponseDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<PagedResult<FormResponseDto>>> GetResponses(
-        Guid formId,
+        long formId,
         [FromQuery] int subscriberId,
         [FromQuery] int? restaurantId = null,
         [FromQuery] int pageNumber = 1,

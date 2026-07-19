@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Vendo.FormBuilder.Api.Controllers;
 
 [ApiController]
-[Route("api/forms/{formId:guid}/fields")]
+[Route("api/forms/{formId:long}/fields")]
 [Produces("application/json")]
 public sealed class FormFieldsController : ControllerBase
 {
@@ -30,7 +30,7 @@ public sealed class FormFieldsController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<FormFieldDto>> AddField(
-        Guid formId,
+        long formId,
         [FromQuery] int subscriberId,
         [FromBody] AddFormFieldRequest request,
         [FromQuery] int? restaurantId = null,
@@ -64,13 +64,13 @@ public sealed class FormFieldsController : ControllerBase
     /// <summary>
     /// Update a field on a draft form.
     /// </summary>
-    [HttpPut("{fieldId:guid}")]
+    [HttpPut("{fieldId:long}")]
     [ProducesResponseType(typeof(FormFieldDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<FormFieldDto>> UpdateField(
-        Guid formId,
-        Guid fieldId,
+        long formId,
+        long fieldId,
         [FromQuery] int subscriberId,
         [FromBody] UpdateFormFieldRequest request,
         [FromQuery] int? restaurantId = null,
@@ -99,12 +99,12 @@ public sealed class FormFieldsController : ControllerBase
     /// <summary>
     /// Soft-delete a field from a draft form.
     /// </summary>
-    [HttpDelete("{fieldId:guid}")]
+    [HttpDelete("{fieldId:long}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteField(
-        Guid formId,
-        Guid fieldId,
+        long formId,
+        long fieldId,
         [FromQuery] int subscriberId,
         [FromQuery] int? restaurantId = null,
         [FromQuery] string? deletedBy = null,
@@ -124,7 +124,7 @@ public sealed class FormFieldsController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<FormDetailDto>> ReorderFields(
-        Guid formId,
+        long formId,
         [FromQuery] int subscriberId,
         [FromBody] ReorderFormFieldsRequest request,
         [FromQuery] int? restaurantId = null,

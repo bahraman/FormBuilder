@@ -7,7 +7,7 @@ using MediatR;
 namespace Vendo.FormBuilder.Application.Forms.Commands.ReorderFormFields;
 
 public sealed record ReorderFormFieldsCommand(
-    Guid FormId,
+    long FormId,
     int SubscriberId,
     int? RestaurantId,
     IReadOnlyList<FieldOrderItemDto> FieldOrders,

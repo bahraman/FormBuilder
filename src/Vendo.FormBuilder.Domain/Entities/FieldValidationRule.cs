@@ -5,7 +5,7 @@ namespace Vendo.FormBuilder.Domain.Entities;
 
 public class FieldValidationRule : BaseEntity
 {
-    public Guid FormFieldId { get; private set; }
+    public long FormFieldId { get; private set; }
     public FormField? FormField { get; private set; }
     public ValidationRuleType RuleType { get; private set; }
     public string Value { get; private set; } = string.Empty;
@@ -16,7 +16,7 @@ public class FieldValidationRule : BaseEntity
     }
 
     public static FieldValidationRule Create(
-        Guid formFieldId,
+        long formFieldId,
         ValidationRuleType ruleType,
         string value,
         string? errorMessage = null)

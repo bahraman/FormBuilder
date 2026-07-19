@@ -8,7 +8,7 @@ using MediatR;
 namespace Vendo.FormBuilder.Application.Forms.Commands.CreateFormVersion;
 
 public sealed record CreateFormVersionCommand(
-    Guid FormId,
+    long FormId,
     int SubscriberId,
     int? RestaurantId = null,
     string? CreatedBy = null) : IRequest<FormDetailDto>;

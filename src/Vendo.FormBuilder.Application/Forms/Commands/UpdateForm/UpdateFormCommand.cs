@@ -7,7 +7,7 @@ using MediatR;
 namespace Vendo.FormBuilder.Application.Forms.Commands.UpdateForm;
 
 public sealed record UpdateFormCommand(
-    Guid FormId,
+    long FormId,
     int SubscriberId,
     int? RestaurantId,
     string Name,

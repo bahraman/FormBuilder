@@ -9,7 +9,7 @@ using MediatR;
 namespace Vendo.FormBuilder.Application.Responses.Commands.SubmitFormResponse;
 
 public sealed record SubmitFormResponseCommand(
-    Guid FormId,
+    long FormId,
     int SubscriberId,
     int? RestaurantId,
     IReadOnlyList<FormResponseValueInputDto> Values,

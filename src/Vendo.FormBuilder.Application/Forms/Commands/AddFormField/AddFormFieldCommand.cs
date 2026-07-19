@@ -8,7 +8,7 @@ using MediatR;
 namespace Vendo.FormBuilder.Application.Forms.Commands.AddFormField;
 
 public sealed record AddFormFieldCommand(
-    Guid FormId,
+    long FormId,
     int SubscriberId,
     int? RestaurantId,
     string Name,

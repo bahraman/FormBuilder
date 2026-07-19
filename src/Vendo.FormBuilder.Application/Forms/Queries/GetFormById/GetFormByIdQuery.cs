@@ -6,7 +6,7 @@ using MediatR;
 namespace Vendo.FormBuilder.Application.Forms.Queries.GetFormById;
 
 public sealed record GetFormByIdQuery(
-    Guid FormId,
+    long FormId,
     int SubscriberId,
     int? RestaurantId = null) : IRequest<FormDetailDto>;
 

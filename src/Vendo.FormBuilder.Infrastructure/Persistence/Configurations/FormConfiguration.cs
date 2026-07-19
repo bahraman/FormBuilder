@@ -12,6 +12,9 @@ public sealed class FormConfiguration : IEntityTypeConfiguration<Form>
 
         builder.HasKey(x => x.Id);
 
+        builder.Property(x => x.Id)
+            .ValueGeneratedOnAdd();
+
         builder.Property(x => x.SubscriberId)
             .IsRequired();
 

@@ -52,11 +52,11 @@ public sealed class FormsController : ControllerBase
     /// <summary>
     /// Get a form by id. Requires subscriberId; optional restaurantId enforces restaurant isolation.
     /// </summary>
-    [HttpGet("{formId:guid}")]
+    [HttpGet("{formId:long}")]
     [ProducesResponseType(typeof(FormDetailDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<FormDetailDto>> GetFormById(
-        Guid formId,
+        long formId,
         [FromQuery] int subscriberId,
         [FromQuery] int? restaurantId = null,
         CancellationToken cancellationToken = default)
@@ -97,12 +97,12 @@ public sealed class FormsController : ControllerBase
     /// <summary>
     /// Update a draft form's metadata. Requires RowVersion for optimistic concurrency.
     /// </summary>
-    [HttpPut("{formId:guid}")]
+    [HttpPut("{formId:long}")]
     [ProducesResponseType(typeof(FormDetailDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<FormDetailDto>> UpdateForm(
-        Guid formId,
+        long formId,
         [FromQuery] int subscriberId,
         [FromBody] UpdateFormRequest request,
         [FromQuery] int? restaurantId = null,
@@ -125,12 +125,12 @@ public sealed class FormsController : ControllerBase
     /// <summary>
     /// Publish a draft form so it can accept responses.
     /// </summary>
-    [HttpPost("{formId:guid}/publish")]
+    [HttpPost("{formId:long}/publish")]
     [ProducesResponseType(typeof(FormDetailDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<FormDetailDto>> PublishForm(
-        Guid formId,
+        long formId,
         [FromQuery] int subscriberId,
         [FromBody] ActorRequest? request,
         [FromQuery] int? restaurantId = null,
@@ -146,12 +146,12 @@ public sealed class FormsController : ControllerBase
     /// <summary>
     /// Archive a published form.
     /// </summary>
-    [HttpPost("{formId:guid}/archive")]
+    [HttpPost("{formId:long}/archive")]
     [ProducesResponseType(typeof(FormDetailDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<FormDetailDto>> ArchiveForm(
-        Guid formId,
+        long formId,
         [FromQuery] int subscriberId,
         [FromBody] ActorRequest? request,
         [FromQuery] int? restaurantId = null,
@@ -167,12 +167,12 @@ public sealed class FormsController : ControllerBase
     /// <summary>
     /// Create a new draft version from a published or archived form (same tenant ownership).
     /// </summary>
-    [HttpPost("{formId:guid}/versions")]
+    [HttpPost("{formId:long}/versions")]
     [ProducesResponseType(typeof(FormDetailDto), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<FormDetailDto>> CreateFormVersion(
-        Guid formId,
+        long formId,
         [FromQuery] int subscriberId,
         [FromBody] ActorRequest? request,
         [FromQuery] int? restaurantId = null,
@@ -191,11 +191,11 @@ public sealed class FormsController : ControllerBase
     /// <summary>
     /// Soft-delete a form.
     /// </summary>
-    [HttpDelete("{formId:guid}")]
+    [HttpDelete("{formId:long}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteForm(
-        Guid formId,
+        long formId,
         [FromQuery] int subscriberId,
         [FromQuery] int? restaurantId = null,
         [FromQuery] string? deletedBy = null,

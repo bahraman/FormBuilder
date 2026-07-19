@@ -4,7 +4,7 @@ using Vendo.FormBuilder.Domain.Exceptions;
 
 namespace Vendo.FormBuilder.Domain.Entities;
 
-public class Form : BaseEntity
+public class Form : LongEntity
 {
     private readonly List<FormField> _fields = [];
     private readonly List<FormResponse> _responses = [];
@@ -23,7 +23,7 @@ public class Form : BaseEntity
     public string Slug { get; private set; } = string.Empty;
     public FormStatus Status { get; private set; } = FormStatus.Draft;
     public int Version { get; private set; } = 1;
-    public Guid? ParentFormId { get; private set; }
+    public long? ParentFormId { get; private set; }
     public Form? ParentForm { get; private set; }
     public DateTime? PublishedAtUtc { get; private set; }
     public DateTime? ArchivedAtUtc { get; private set; }
@@ -140,6 +140,7 @@ public class Form : BaseEntity
 
         foreach (var field in _fields.Where(f => !f.IsDeleted).OrderBy(f => f.DisplayOrder))
         {
+            // newVersion.Id is 0 until save; EF relationship fix-up assigns FKs on insert.
             newVersion.AddField(field.CloneForNewForm(newVersion.Id));
         }
 
@@ -189,7 +190,7 @@ public class Form : BaseEntity
         _fields.Add(field);
     }
 
-    public void ReorderFields(IReadOnlyDictionary<Guid, int> fieldOrders, string? updatedBy = null)
+    public void ReorderFields(IReadOnlyDictionary<long, int> fieldOrders, string? updatedBy = null)
     {
         EnsureEditable();
 
@@ -205,7 +206,7 @@ public class Form : BaseEntity
         UpdatedBy = updatedBy;
     }
 
-    public FormField GetField(Guid fieldId)
+    public FormField GetField(long fieldId)
     {
         return _fields.FirstOrDefault(f => f.Id == fieldId && !f.IsDeleted)
             ?? throw new NotFoundException(nameof(FormField), fieldId);

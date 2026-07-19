@@ -4,12 +4,12 @@ using Vendo.FormBuilder.Domain.Exceptions;
 
 namespace Vendo.FormBuilder.Domain.Entities;
 
-public class FormField : BaseEntity
+public class FormField : LongEntity
 {
     private readonly List<FieldOption> _options = [];
     private readonly List<FieldValidationRule> _validationRules = [];
 
-    public Guid FormId { get; private set; }
+    public long FormId { get; private set; }
     public Form? Form { get; private set; }
     public string Name { get; private set; } = string.Empty;
     public string Label { get; private set; } = string.Empty;
@@ -28,7 +28,7 @@ public class FormField : BaseEntity
     }
 
     public static FormField Create(
-        Guid formId,
+        long formId,
         string name,
         string label,
         FieldType fieldType,
@@ -193,7 +193,7 @@ public class FormField : BaseEntity
         }
     }
 
-    public FormField CloneForNewForm(Guid newFormId)
+    public FormField CloneForNewForm(long newFormId)
     {
         var clone = Create(
             newFormId,
@@ -258,6 +258,6 @@ public class FormField : BaseEntity
     /// Entities that have never been saved have no SQL rowversion token yet.
     /// Soft-deleting them causes EF to issue an UPDATE that affects 0 rows.
     /// </summary>
-    private static bool IsTransient(BaseEntity entity) =>
+    private static bool IsTransient(AuditableEntity entity) =>
         entity.RowVersion is null || entity.RowVersion.Length == 0;
 }

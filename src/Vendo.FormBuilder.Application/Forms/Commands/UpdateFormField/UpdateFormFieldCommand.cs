@@ -8,8 +8,8 @@ using MediatR;
 namespace Vendo.FormBuilder.Application.Forms.Commands.UpdateFormField;
 
 public sealed record UpdateFormFieldCommand(
-    Guid FormId,
-    Guid FieldId,
+    long FormId,
+    long FieldId,
     int SubscriberId,
     int? RestaurantId,
     string Label,

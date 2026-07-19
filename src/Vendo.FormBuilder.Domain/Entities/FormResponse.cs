@@ -6,7 +6,7 @@ public class FormResponse : BaseEntity
 {
     private readonly List<FormResponseValue> _values = [];
 
-    public Guid FormId { get; private set; }
+    public long FormId { get; private set; }
     public Form? Form { get; private set; }
     public string? SubmittedBy { get; private set; }
     public DateTime SubmittedAtUtc { get; private set; }
@@ -20,7 +20,7 @@ public class FormResponse : BaseEntity
     }
 
     public static FormResponse Create(
-        Guid formId,
+        long formId,
         string? submittedBy = null,
         string? ipAddress = null,
         string? userAgent = null)
@@ -36,7 +36,7 @@ public class FormResponse : BaseEntity
         };
     }
 
-    public FormResponseValue AddValue(Guid fieldId, string fieldName, string? value)
+    public FormResponseValue AddValue(long fieldId, string fieldName, string? value)
     {
         var responseValue = FormResponseValue.Create(Id, fieldId, fieldName, value);
         _values.Add(responseValue);

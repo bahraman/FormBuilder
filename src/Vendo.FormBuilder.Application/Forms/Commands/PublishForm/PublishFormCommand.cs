@@ -7,7 +7,7 @@ using MediatR;
 namespace Vendo.FormBuilder.Application.Forms.Commands.PublishForm;
 
 public sealed record PublishFormCommand(
-    Guid FormId,
+    long FormId,
     int SubscriberId,
     int? RestaurantId = null,
     string? UpdatedBy = null) : IRequest<FormDetailDto>;

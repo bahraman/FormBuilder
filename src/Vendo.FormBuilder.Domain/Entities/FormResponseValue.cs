@@ -6,7 +6,7 @@ public class FormResponseValue : BaseEntity
 {
     public Guid FormResponseId { get; private set; }
     public FormResponse? FormResponse { get; private set; }
-    public Guid FormFieldId { get; private set; }
+    public long FormFieldId { get; private set; }
     public FormField? FormField { get; private set; }
     public string FieldName { get; private set; } = string.Empty;
     public string? Value { get; private set; }
@@ -17,7 +17,7 @@ public class FormResponseValue : BaseEntity
 
     public static FormResponseValue Create(
         Guid formResponseId,
-        Guid formFieldId,
+        long formFieldId,
         string fieldName,
         string? value)
     {

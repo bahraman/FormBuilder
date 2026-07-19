@@ -5,7 +5,7 @@ using MediatR;
 namespace Vendo.FormBuilder.Application.Forms.Commands.DeleteForm;
 
 public sealed record DeleteFormCommand(
-    Guid FormId,
+    long FormId,
     int SubscriberId,
     int? RestaurantId = null,
     string? DeletedBy = null) : IRequest;

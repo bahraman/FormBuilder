@@ -149,7 +149,7 @@ public sealed class FormTests
         var first = form.AddField("a", "A", FieldType.Text, 0);
         var second = form.AddField("b", "B", FieldType.Text, 1);
 
-        form.ReorderFields(new Dictionary<Guid, int>
+        form.ReorderFields(new Dictionary<long, int>
         {
             [first.Id] = 5,
             [second.Id] = 1

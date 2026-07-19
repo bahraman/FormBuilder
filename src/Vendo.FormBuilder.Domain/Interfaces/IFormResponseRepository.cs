@@ -6,7 +6,7 @@ public interface IFormResponseRepository
 {
     Task<FormResponse?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<(IReadOnlyList<FormResponse> Items, int TotalCount)> GetByFormIdPagedAsync(
-        Guid formId,
+        long formId,
         int pageNumber,
         int pageSize,
         CancellationToken cancellationToken = default);

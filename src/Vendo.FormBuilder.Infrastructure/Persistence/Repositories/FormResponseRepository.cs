@@ -22,7 +22,7 @@ public sealed class FormResponseRepository : IFormResponseRepository
     }
 
     public async Task<(IReadOnlyList<FormResponse> Items, int TotalCount)> GetByFormIdPagedAsync(
-        Guid formId,
+        long formId,
         int pageNumber,
         int pageSize,
         CancellationToken cancellationToken = default)

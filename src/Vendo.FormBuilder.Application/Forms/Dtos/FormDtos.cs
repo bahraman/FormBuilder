@@ -4,7 +4,7 @@ namespace Vendo.FormBuilder.Application.Forms.Dtos;
 
 public class FormSummaryDto
 {
-    public required Guid Id { get; init; }
+    public required long Id { get; init; }
     public required int SubscriberId { get; init; }
     public int? RestaurantId { get; init; }
     public required string Name { get; init; }
@@ -12,7 +12,7 @@ public class FormSummaryDto
     public required string Slug { get; init; }
     public required FormStatus Status { get; init; }
     public required int Version { get; init; }
-    public Guid? ParentFormId { get; init; }
+    public long? ParentFormId { get; init; }
     public DateTime? PublishedAtUtc { get; init; }
     public DateTime? ArchivedAtUtc { get; init; }
     public required DateTime CreatedAtUtc { get; init; }
@@ -28,8 +28,8 @@ public sealed class FormDetailDto : FormSummaryDto
 
 public sealed class FormFieldDto
 {
-    public required Guid Id { get; init; }
-    public required Guid FormId { get; init; }
+    public required long Id { get; init; }
+    public required long FormId { get; init; }
     public required string Name { get; init; }
     public required string Label { get; init; }
     public required FieldType FieldType { get; init; }
@@ -77,6 +77,6 @@ public sealed class FieldValidationRuleInputDto
 
 public sealed class FieldOrderItemDto
 {
-    public required Guid FieldId { get; init; }
+    public required long FieldId { get; init; }
     public required int DisplayOrder { get; init; }
 }

@@ -14,14 +14,14 @@ public sealed class FormRepository : IFormRepository
         _dbContext = dbContext;
     }
 
-    public Task<Form?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public Task<Form?> GetByIdAsync(long id, CancellationToken cancellationToken = default)
     {
         return _dbContext.Forms
             .AsNoTracking()
             .FirstOrDefaultAsync(f => f.Id == id, cancellationToken);
     }
 
-    public Task<Form?> GetByIdWithDetailsAsync(Guid id, CancellationToken cancellationToken = default)
+    public Task<Form?> GetByIdWithDetailsAsync(long id, CancellationToken cancellationToken = default)
     {
         return _dbContext.Forms
             .Include(f => f.Fields)
@@ -74,7 +74,7 @@ public sealed class FormRepository : IFormRepository
         int subscriberId,
         int? restaurantId,
         string slug,
-        Guid? excludeFormId = null,
+        long? excludeFormId = null,
         CancellationToken cancellationToken = default)
     {
         var query = _dbContext.Forms.AsNoTracking()

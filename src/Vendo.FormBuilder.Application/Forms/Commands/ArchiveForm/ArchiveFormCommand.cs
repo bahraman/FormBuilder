@@ -7,7 +7,7 @@ using MediatR;
 namespace Vendo.FormBuilder.Application.Forms.Commands.ArchiveForm;
 
 public sealed record ArchiveFormCommand(
-    Guid FormId,
+    long FormId,
     int SubscriberId,
     int? RestaurantId = null,
     string? UpdatedBy = null) : IRequest<FormDetailDto>;
