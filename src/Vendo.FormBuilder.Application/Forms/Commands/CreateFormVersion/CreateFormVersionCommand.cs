@@ -1,3 +1,4 @@
+using Vendo.FormBuilder.Application.Common.Forms;
 using Vendo.FormBuilder.Application.Common.Mappings;
 using Vendo.FormBuilder.Application.Forms.Dtos;
 using Vendo.FormBuilder.Domain.Exceptions;
@@ -6,7 +7,11 @@ using MediatR;
 
 namespace Vendo.FormBuilder.Application.Forms.Commands.CreateFormVersion;
 
-public sealed record CreateFormVersionCommand(Guid FormId, string? CreatedBy = null) : IRequest<FormDetailDto>;
+public sealed record CreateFormVersionCommand(
+    Guid FormId,
+    Guid SubscriberId,
+    Guid? RestaurantId = null,
+    string? CreatedBy = null) : IRequest<FormDetailDto>;
 
 public sealed class CreateFormVersionCommandHandler : IRequestHandler<CreateFormVersionCommand, FormDetailDto>
 {
@@ -21,10 +26,20 @@ public sealed class CreateFormVersionCommandHandler : IRequestHandler<CreateForm
 
     public async Task<FormDetailDto> Handle(CreateFormVersionCommand request, CancellationToken cancellationToken)
     {
-        var form = await _formRepository.GetByIdWithDetailsAsync(request.FormId, cancellationToken)
-            ?? throw new NotFoundException(nameof(Domain.Entities.Form), request.FormId);
+        var form = await FormAccess.GetAccessibleFormAsync(
+            _formRepository,
+            request.FormId,
+            request.SubscriberId,
+            request.RestaurantId,
+            withDetails: true,
+            cancellationToken);
 
-        var latestVersion = await _formRepository.GetLatestVersionAsync(form.Slug, cancellationToken);
+        var latestVersion = await _formRepository.GetLatestVersionAsync(
+            form.SubscriberId,
+            form.RestaurantId,
+            form.Slug,
+            cancellationToken);
+
         if (form.Version < latestVersion)
         {
             throw new ConflictException(

@@ -27,11 +27,15 @@ public sealed class FormsController : ControllerBase
     }
 
     /// <summary>
-    /// Get a paginated list of forms with optional search and status filters.
+    /// Get a paginated list of forms for a subscriber (optionally scoped to a restaurant).
+    /// When restaurantId is provided, returns that restaurant's forms plus subscriber-level shared forms.
     /// </summary>
     [HttpGet]
     [ProducesResponseType(typeof(PagedResult<FormSummaryDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<PagedResult<FormSummaryDto>>> GetForms(
+        [FromQuery] Guid subscriberId,
+        [FromQuery] Guid? restaurantId = null,
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 20,
         [FromQuery] string? search = null,
@@ -39,28 +43,32 @@ public sealed class FormsController : ControllerBase
         CancellationToken cancellationToken = default)
     {
         var result = await _sender.Send(
-            new GetFormsQuery(pageNumber, pageSize, search, status),
+            new GetFormsQuery(subscriberId, restaurantId, pageNumber, pageSize, search, status),
             cancellationToken);
 
         return Ok(result);
     }
 
     /// <summary>
-    /// Get a form by id including fields, options, and validation rules.
+    /// Get a form by id. Requires subscriberId; optional restaurantId enforces restaurant isolation.
     /// </summary>
     [HttpGet("{formId:guid}")]
     [ProducesResponseType(typeof(FormDetailDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<FormDetailDto>> GetFormById(
         Guid formId,
-        CancellationToken cancellationToken)
+        [FromQuery] Guid subscriberId,
+        [FromQuery] Guid? restaurantId = null,
+        CancellationToken cancellationToken = default)
     {
-        var result = await _sender.Send(new GetFormByIdQuery(formId), cancellationToken);
+        var result = await _sender.Send(
+            new GetFormByIdQuery(formId, subscriberId, restaurantId),
+            cancellationToken);
         return Ok(result);
     }
 
     /// <summary>
-    /// Create a new draft form.
+    /// Create a new draft form owned by a subscriber (optionally restaurant-specific).
     /// </summary>
     [HttpPost]
     [ProducesResponseType(typeof(FormDetailDto), StatusCodes.Status201Created)]
@@ -71,10 +79,19 @@ public sealed class FormsController : ControllerBase
         CancellationToken cancellationToken)
     {
         var result = await _sender.Send(
-            new CreateFormCommand(request.Name, request.Description, request.Slug, request.CreatedBy),
+            new CreateFormCommand(
+                request.SubscriberId,
+                request.RestaurantId,
+                request.Name,
+                request.Description,
+                request.Slug,
+                request.CreatedBy),
             cancellationToken);
 
-        return CreatedAtAction(nameof(GetFormById), new { formId = result.Id }, result);
+        return CreatedAtAction(
+            nameof(GetFormById),
+            new { formId = result.Id, subscriberId = result.SubscriberId, restaurantId = result.RestaurantId },
+            result);
     }
 
     /// <summary>
@@ -86,11 +103,20 @@ public sealed class FormsController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<FormDetailDto>> UpdateForm(
         Guid formId,
+        [FromQuery] Guid subscriberId,
         [FromBody] UpdateFormRequest request,
-        CancellationToken cancellationToken)
+        [FromQuery] Guid? restaurantId = null,
+        CancellationToken cancellationToken = default)
     {
         var result = await _sender.Send(
-            new UpdateFormCommand(formId, request.Name, request.Description, request.RowVersion, request.UpdatedBy),
+            new UpdateFormCommand(
+                formId,
+                subscriberId,
+                restaurantId,
+                request.Name,
+                request.Description,
+                request.RowVersion,
+                request.UpdatedBy),
             cancellationToken);
 
         return Ok(result);
@@ -105,11 +131,13 @@ public sealed class FormsController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<FormDetailDto>> PublishForm(
         Guid formId,
+        [FromQuery] Guid subscriberId,
         [FromBody] ActorRequest? request,
-        CancellationToken cancellationToken)
+        [FromQuery] Guid? restaurantId = null,
+        CancellationToken cancellationToken = default)
     {
         var result = await _sender.Send(
-            new PublishFormCommand(formId, request?.Actor),
+            new PublishFormCommand(formId, subscriberId, restaurantId, request?.Actor),
             cancellationToken);
 
         return Ok(result);
@@ -124,18 +152,20 @@ public sealed class FormsController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<FormDetailDto>> ArchiveForm(
         Guid formId,
+        [FromQuery] Guid subscriberId,
         [FromBody] ActorRequest? request,
-        CancellationToken cancellationToken)
+        [FromQuery] Guid? restaurantId = null,
+        CancellationToken cancellationToken = default)
     {
         var result = await _sender.Send(
-            new ArchiveFormCommand(formId, request?.Actor),
+            new ArchiveFormCommand(formId, subscriberId, restaurantId, request?.Actor),
             cancellationToken);
 
         return Ok(result);
     }
 
     /// <summary>
-    /// Create a new draft version from a published or archived form.
+    /// Create a new draft version from a published or archived form (same tenant ownership).
     /// </summary>
     [HttpPost("{formId:guid}/versions")]
     [ProducesResponseType(typeof(FormDetailDto), StatusCodes.Status201Created)]
@@ -143,14 +173,19 @@ public sealed class FormsController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<FormDetailDto>> CreateFormVersion(
         Guid formId,
+        [FromQuery] Guid subscriberId,
         [FromBody] ActorRequest? request,
-        CancellationToken cancellationToken)
+        [FromQuery] Guid? restaurantId = null,
+        CancellationToken cancellationToken = default)
     {
         var result = await _sender.Send(
-            new CreateFormVersionCommand(formId, request?.Actor),
+            new CreateFormVersionCommand(formId, subscriberId, restaurantId, request?.Actor),
             cancellationToken);
 
-        return CreatedAtAction(nameof(GetFormById), new { formId = result.Id }, result);
+        return CreatedAtAction(
+            nameof(GetFormById),
+            new { formId = result.Id, subscriberId = result.SubscriberId, restaurantId = result.RestaurantId },
+            result);
     }
 
     /// <summary>
@@ -161,14 +196,25 @@ public sealed class FormsController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteForm(
         Guid formId,
+        [FromQuery] Guid subscriberId,
+        [FromQuery] Guid? restaurantId = null,
         [FromQuery] string? deletedBy = null,
         CancellationToken cancellationToken = default)
     {
-        await _sender.Send(new DeleteFormCommand(formId, deletedBy), cancellationToken);
+        await _sender.Send(
+            new DeleteFormCommand(formId, subscriberId, restaurantId, deletedBy),
+            cancellationToken);
         return NoContent();
     }
 }
 
-public sealed record CreateFormRequest(string Name, string? Description, string Slug, string? CreatedBy = null);
+public sealed record CreateFormRequest(
+    Guid SubscriberId,
+    string Name,
+    string? Description,
+    string Slug,
+    Guid? RestaurantId = null,
+    string? CreatedBy = null);
+
 public sealed record UpdateFormRequest(string Name, string? Description, string RowVersion, string? UpdatedBy = null);
 public sealed record ActorRequest(string? Actor = null);

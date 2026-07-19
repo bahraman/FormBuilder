@@ -1,6 +1,6 @@
+using Vendo.FormBuilder.Application.Common.Forms;
 using Vendo.FormBuilder.Application.Common.Mappings;
 using Vendo.FormBuilder.Application.Forms.Dtos;
-using Vendo.FormBuilder.Domain.Exceptions;
 using Vendo.FormBuilder.Domain.Interfaces;
 using MediatR;
 
@@ -8,6 +8,8 @@ namespace Vendo.FormBuilder.Application.Forms.Commands.ReorderFormFields;
 
 public sealed record ReorderFormFieldsCommand(
     Guid FormId,
+    Guid SubscriberId,
+    Guid? RestaurantId,
     IReadOnlyList<FieldOrderItemDto> FieldOrders,
     string? UpdatedBy = null) : IRequest<FormDetailDto>;
 
@@ -24,8 +26,13 @@ public sealed class ReorderFormFieldsCommandHandler : IRequestHandler<ReorderFor
 
     public async Task<FormDetailDto> Handle(ReorderFormFieldsCommand request, CancellationToken cancellationToken)
     {
-        var form = await _formRepository.GetByIdWithDetailsAsync(request.FormId, cancellationToken)
-            ?? throw new NotFoundException(nameof(Domain.Entities.Form), request.FormId);
+        var form = await FormAccess.GetAccessibleFormAsync(
+            _formRepository,
+            request.FormId,
+            request.SubscriberId,
+            request.RestaurantId,
+            withDetails: true,
+            cancellationToken);
 
         var orders = request.FieldOrders.ToDictionary(x => x.FieldId, x => x.DisplayOrder);
         form.ReorderFields(orders, request.UpdatedBy);

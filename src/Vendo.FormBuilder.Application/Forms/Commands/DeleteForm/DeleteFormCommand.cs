@@ -1,10 +1,14 @@
-using Vendo.FormBuilder.Domain.Exceptions;
+using Vendo.FormBuilder.Application.Common.Forms;
 using Vendo.FormBuilder.Domain.Interfaces;
 using MediatR;
 
 namespace Vendo.FormBuilder.Application.Forms.Commands.DeleteForm;
 
-public sealed record DeleteFormCommand(Guid FormId, string? DeletedBy = null) : IRequest;
+public sealed record DeleteFormCommand(
+    Guid FormId,
+    Guid SubscriberId,
+    Guid? RestaurantId = null,
+    string? DeletedBy = null) : IRequest;
 
 public sealed class DeleteFormCommandHandler : IRequestHandler<DeleteFormCommand>
 {
@@ -19,8 +23,13 @@ public sealed class DeleteFormCommandHandler : IRequestHandler<DeleteFormCommand
 
     public async Task Handle(DeleteFormCommand request, CancellationToken cancellationToken)
     {
-        var form = await _formRepository.GetByIdWithDetailsAsync(request.FormId, cancellationToken)
-            ?? throw new NotFoundException(nameof(Domain.Entities.Form), request.FormId);
+        var form = await FormAccess.GetAccessibleFormAsync(
+            _formRepository,
+            request.FormId,
+            request.SubscriberId,
+            request.RestaurantId,
+            withDetails: true,
+            cancellationToken);
 
         form.SoftDelete(request.DeletedBy);
         _formRepository.Update(form);

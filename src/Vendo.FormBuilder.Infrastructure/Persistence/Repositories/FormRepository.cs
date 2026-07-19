@@ -32,16 +32,18 @@ public sealed class FormRepository : IFormRepository
     }
 
     public async Task<(IReadOnlyList<Form> Items, int TotalCount)> GetPagedAsync(
+        Guid subscriberId,
+        Guid? restaurantId,
         int pageNumber,
         int pageSize,
         string? search = null,
         FormStatus? status = null,
         CancellationToken cancellationToken = default)
     {
-        var query = _dbContext.Forms
-            .AsNoTracking()
-            .Include(f => f.Fields)
-            .AsQueryable();
+        var query = ApplyTenantFilter(
+                _dbContext.Forms.AsNoTracking().Include(f => f.Fields),
+                subscriberId,
+                restaurantId);
 
         if (!string.IsNullOrWhiteSpace(search))
         {
@@ -69,11 +71,17 @@ public sealed class FormRepository : IFormRepository
     }
 
     public Task<bool> SlugExistsAsync(
+        Guid subscriberId,
+        Guid? restaurantId,
         string slug,
         Guid? excludeFormId = null,
         CancellationToken cancellationToken = default)
     {
-        var query = _dbContext.Forms.AsNoTracking().Where(f => f.Slug == slug);
+        var query = _dbContext.Forms.AsNoTracking()
+            .Where(f =>
+                f.SubscriberId == subscriberId &&
+                f.RestaurantId == restaurantId &&
+                f.Slug == slug);
 
         if (excludeFormId.HasValue)
         {
@@ -83,11 +91,18 @@ public sealed class FormRepository : IFormRepository
         return query.AnyAsync(cancellationToken);
     }
 
-    public async Task<int> GetLatestVersionAsync(string slug, CancellationToken cancellationToken = default)
+    public async Task<int> GetLatestVersionAsync(
+        Guid subscriberId,
+        Guid? restaurantId,
+        string slug,
+        CancellationToken cancellationToken = default)
     {
         return await _dbContext.Forms
             .AsNoTracking()
-            .Where(f => f.Slug == slug)
+            .Where(f =>
+                f.SubscriberId == subscriberId &&
+                f.RestaurantId == restaurantId &&
+                f.Slug == slug)
             .Select(f => (int?)f.Version)
             .MaxAsync(cancellationToken) ?? 0;
     }
@@ -100,5 +115,25 @@ public sealed class FormRepository : IFormRepository
     public void Update(Form form)
     {
         _dbContext.Forms.Update(form);
+    }
+
+    /// <summary>
+    /// Subscriber is always required.
+    /// When restaurantId is provided: restaurant-specific forms for that restaurant + subscriber-level (null) forms.
+    /// When restaurantId is null: all forms for the subscriber.
+    /// </summary>
+    private static IQueryable<Form> ApplyTenantFilter(
+        IQueryable<Form> query,
+        Guid subscriberId,
+        Guid? restaurantId)
+    {
+        query = query.Where(f => f.SubscriberId == subscriberId);
+
+        if (restaurantId.HasValue)
+        {
+            query = query.Where(f => f.RestaurantId == null || f.RestaurantId == restaurantId);
+        }
+
+        return query;
     }
 }
