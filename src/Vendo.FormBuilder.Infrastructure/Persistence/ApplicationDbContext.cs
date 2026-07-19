@@ -1,6 +1,7 @@
 using Vendo.FormBuilder.Domain.Common;
 using Vendo.FormBuilder.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace Vendo.FormBuilder.Infrastructure.Persistence;
 
@@ -40,12 +41,37 @@ public sealed class ApplicationDbContext : DbContext
     {
         ChangeTracker.DetectChanges();
         NormalizeRowVersionEntityStates();
+        MarkTemporaryLongIdentityKeys();
 
         foreach (var entry in ChangeTracker.Entries<AuditableEntity>())
         {
             if (entry.State == EntityState.Modified)
             {
                 entry.Entity.UpdatedAtUtc ??= DateTime.UtcNow;
+            }
+        }
+    }
+
+    /// <summary>
+    /// LongEntity assigns negative in-memory Ids so graphs stay unique before INSERT.
+    /// SQL Server IDENTITY rejects explicit Ids unless IDENTITY_INSERT is ON, so tell EF
+    /// those values are temporary; store-generated values replace them (and matching FKs).
+    /// </summary>
+    private void MarkTemporaryLongIdentityKeys()
+    {
+        foreach (var entry in ChangeTracker.Entries())
+        {
+            if (entry.State != EntityState.Added || entry.Entity is not LongEntity)
+            {
+                continue;
+            }
+
+            var idProperty = entry.Property(nameof(LongEntity.Id));
+            if (idProperty.Metadata.ValueGenerated == ValueGenerated.OnAdd
+                && idProperty.CurrentValue is long id
+                && id < 0)
+            {
+                idProperty.IsTemporary = true;
             }
         }
     }

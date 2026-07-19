@@ -13,7 +13,8 @@ public sealed class FormFieldConfiguration : IEntityTypeConfiguration<FormField>
         builder.HasKey(x => x.Id);
 
         builder.Property(x => x.Id)
-            .ValueGeneratedOnAdd();
+            .ValueGeneratedOnAdd()
+            .UseIdentityColumn();
 
         builder.Property(x => x.Name)
             .HasMaxLength(100)

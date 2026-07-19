@@ -33,7 +33,8 @@ public abstract class LongEntity : BaseEntity<long>
 
     protected LongEntity()
     {
-        // Distinct temporary keys for in-memory graphs; replaced by IDENTITY on insert.
+        // Distinct negative keys for in-memory graphs. ApplicationDbContext marks these
+        // as EF temporary values so SQL Server IDENTITY assigns the real Id on insert.
         Id = Interlocked.Decrement(ref _temporaryId);
     }
 }
