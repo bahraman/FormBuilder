@@ -34,7 +34,6 @@ public sealed class ArchiveFormCommandHandler : IRequestHandler<ArchiveFormComma
             cancellationToken);
 
         form.Archive(request.UpdatedBy);
-        _formRepository.Update(form);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return form.ToDetailDto();

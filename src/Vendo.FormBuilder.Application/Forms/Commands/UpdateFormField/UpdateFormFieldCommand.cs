@@ -49,7 +49,7 @@ public sealed class UpdateFormFieldCommandHandler : IRequestHandler<UpdateFormFi
         }
 
         var field = form.GetField(request.FieldId);
-        field.RowVersion = Convert.FromBase64String(request.RowVersion);
+        _formRepository.SetOriginalRowVersion(field, Convert.FromBase64String(request.RowVersion));
         field.Update(
             request.Label,
             request.IsRequired,
@@ -72,7 +72,6 @@ public sealed class UpdateFormFieldCommandHandler : IRequestHandler<UpdateFormFi
 
         form.UpdatedAtUtc = DateTime.UtcNow;
         form.UpdatedBy = request.UpdatedBy;
-        _formRepository.Update(form);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return field.ToDto();

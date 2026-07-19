@@ -32,7 +32,6 @@ public sealed class DeleteFormCommandHandler : IRequestHandler<DeleteFormCommand
             cancellationToken);
 
         form.SoftDelete(request.DeletedBy);
-        _formRepository.Update(form);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }

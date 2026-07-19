@@ -37,8 +37,7 @@ public sealed class UpdateFormCommandHandler : IRequestHandler<UpdateFormCommand
             cancellationToken);
 
         form.Update(request.Name, request.Description, request.UpdatedBy);
-        form.RowVersion = Convert.FromBase64String(request.RowVersion);
-        _formRepository.Update(form);
+        _formRepository.SetOriginalRowVersion(form, Convert.FromBase64String(request.RowVersion));
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return form.ToDetailDto();

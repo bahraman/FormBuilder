@@ -114,7 +114,24 @@ public sealed class FormRepository : IFormRepository
 
     public void Update(Form form)
     {
-        _dbContext.Forms.Update(form);
+        var entry = _dbContext.Entry(form);
+        if (entry.State == EntityState.Detached)
+        {
+            // Only attach detached roots. Never call Update() on a tracked aggregate graph:
+            // EF would mark newly added children as Modified with empty RowVersion tokens.
+            _dbContext.Forms.Attach(form);
+            entry.State = EntityState.Modified;
+        }
+    }
+
+    public void SetOriginalRowVersion(Form form, byte[] rowVersion)
+    {
+        _dbContext.Entry(form).Property(x => x.RowVersion).OriginalValue = rowVersion;
+    }
+
+    public void SetOriginalRowVersion(FormField field, byte[] rowVersion)
+    {
+        _dbContext.Entry(field).Property(x => x.RowVersion).OriginalValue = rowVersion;
     }
 
     /// <summary>

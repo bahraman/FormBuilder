@@ -43,7 +43,6 @@ public sealed class DeleteFormFieldCommandHandler : IRequestHandler<DeleteFormFi
         form.UpdatedAtUtc = DateTime.UtcNow;
         form.UpdatedBy = request.DeletedBy;
 
-        _formRepository.Update(form);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }

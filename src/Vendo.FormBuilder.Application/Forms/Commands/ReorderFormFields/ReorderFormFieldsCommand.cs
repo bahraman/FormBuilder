@@ -36,7 +36,6 @@ public sealed class ReorderFormFieldsCommandHandler : IRequestHandler<ReorderFor
 
         var orders = request.FieldOrders.ToDictionary(x => x.FieldId, x => x.DisplayOrder);
         form.ReorderFields(orders, request.UpdatedBy);
-        _formRepository.Update(form);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return form.ToDetailDto();

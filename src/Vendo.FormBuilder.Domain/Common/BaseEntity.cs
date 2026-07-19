@@ -9,5 +9,5 @@ public abstract class BaseEntity
     public string? UpdatedBy { get; set; }
     public bool IsDeleted { get; set; }
     public DateTime? DeletedAtUtc { get; set; }
-    public byte[] RowVersion { get; set; } = [];
+    public byte[] RowVersion { get; set; } = null!;
 }

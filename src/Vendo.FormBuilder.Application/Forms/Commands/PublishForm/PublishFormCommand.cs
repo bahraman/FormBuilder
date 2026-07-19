@@ -34,7 +34,6 @@ public sealed class PublishFormCommandHandler : IRequestHandler<PublishFormComma
             cancellationToken);
 
         form.Publish(request.UpdatedBy);
-        _formRepository.Update(form);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return form.ToDetailDto();

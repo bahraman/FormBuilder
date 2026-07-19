@@ -27,5 +27,21 @@ public interface IFormRepository
         string slug,
         CancellationToken cancellationToken = default);
     Task AddAsync(Form form, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Marks a detached form as modified. No-op when the form is already tracked —
+    /// do not use DbSet.Update on tracked aggregates (it marks new children as Modified
+    /// and triggers false concurrency conflicts on rowversion tokens).
+    /// </summary>
     void Update(Form form);
+
+    /// <summary>
+    /// Sets the original concurrency token so SaveChanges fails if the row changed.
+    /// </summary>
+    void SetOriginalRowVersion(Form form, byte[] rowVersion);
+
+    /// <summary>
+    /// Sets the original concurrency token on a field so SaveChanges fails if the row changed.
+    /// </summary>
+    void SetOriginalRowVersion(FormField field, byte[] rowVersion);
 }

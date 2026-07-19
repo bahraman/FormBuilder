@@ -67,7 +67,7 @@ public sealed class AddFormFieldCommandHandler : IRequestHandler<AddFormFieldCom
                 (r.RuleType, r.Value, r.ErrorMessage)));
         }
 
-        _formRepository.Update(form);
+        // Form is already tracked from GetByIdWithDetailsAsync; new fields are detected as Added.
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return field.ToDto();
