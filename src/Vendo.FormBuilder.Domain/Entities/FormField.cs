@@ -117,9 +117,16 @@ public class FormField : BaseEntity
     {
         EnsureSupportsOptions();
 
-        foreach (var option in _options.Where(o => !o.IsDeleted))
+        foreach (var option in _options.Where(o => !o.IsDeleted).ToList())
         {
-            option.SoftDelete();
+            if (IsTransient(option))
+            {
+                _options.Remove(option);
+            }
+            else
+            {
+                option.SoftDelete();
+            }
         }
 
         foreach (var (label, value, displayOrder, isDefault) in options)
@@ -148,9 +155,16 @@ public class FormField : BaseEntity
 
     public void ReplaceValidationRules(IEnumerable<(ValidationRuleType RuleType, string Value, string? ErrorMessage)> rules)
     {
-        foreach (var rule in _validationRules.Where(r => !r.IsDeleted && r.RuleType != ValidationRuleType.Required))
+        foreach (var rule in _validationRules.Where(r => !r.IsDeleted && r.RuleType != ValidationRuleType.Required).ToList())
         {
-            rule.SoftDelete();
+            if (IsTransient(rule))
+            {
+                _validationRules.Remove(rule);
+            }
+            else
+            {
+                rule.SoftDelete();
+            }
         }
 
         foreach (var (ruleType, value, errorMessage) in rules.Where(r => r.RuleType != ValidationRuleType.Required))
@@ -229,7 +243,21 @@ public class FormField : BaseEntity
         }
         else if (requiredRule is not null)
         {
-            requiredRule.SoftDelete();
+            if (IsTransient(requiredRule))
+            {
+                _validationRules.Remove(requiredRule);
+            }
+            else
+            {
+                requiredRule.SoftDelete();
+            }
         }
     }
+
+    /// <summary>
+    /// Entities that have never been saved have no SQL rowversion token yet.
+    /// Soft-deleting them causes EF to issue an UPDATE that affects 0 rows.
+    /// </summary>
+    private static bool IsTransient(BaseEntity entity) =>
+        entity.RowVersion is null || entity.RowVersion.Length == 0;
 }

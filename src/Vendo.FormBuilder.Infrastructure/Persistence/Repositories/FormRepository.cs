@@ -134,6 +134,11 @@ public sealed class FormRepository : IFormRepository
         _dbContext.Entry(field).Property(x => x.RowVersion).OriginalValue = rowVersion;
     }
 
+    public void AddField(FormField field)
+    {
+        _dbContext.FormFields.Add(field);
+    }
+
     /// <summary>
     /// Subscriber is always required.
     /// When restaurantId is provided: restaurant-specific forms for that restaurant + subscriber-level (null) forms.

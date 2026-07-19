@@ -179,8 +179,8 @@ public class Form : BaseEntity
             createdBy);
 
         _fields.Add(field);
-        UpdatedAtUtc = DateTime.UtcNow;
-        UpdatedBy = createdBy;
+        // Do not mutate Form scalars here. Touching UpdatedAtUtc marks Form Modified and
+        // triggers a rowversion UPDATE that frequently false-fails when adding children.
         return field;
     }
 

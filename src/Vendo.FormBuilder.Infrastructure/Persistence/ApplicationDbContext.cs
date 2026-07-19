@@ -24,8 +24,23 @@ public sealed class ApplicationDbContext : DbContext
         base.OnModelCreating(modelBuilder);
     }
 
+    public override int SaveChanges()
+    {
+        PrepareForSave();
+        return base.SaveChanges();
+    }
+
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
+        PrepareForSave();
+        return base.SaveChangesAsync(cancellationToken);
+    }
+
+    private void PrepareForSave()
+    {
+        ChangeTracker.DetectChanges();
+        NormalizeRowVersionEntityStates();
+
         foreach (var entry in ChangeTracker.Entries<BaseEntity>())
         {
             if (entry.State == EntityState.Modified)
@@ -33,8 +48,42 @@ public sealed class ApplicationDbContext : DbContext
                 entry.Entity.UpdatedAtUtc ??= DateTime.UtcNow;
             }
         }
+    }
 
-        return base.SaveChangesAsync(cancellationToken);
+    /// <summary>
+    /// Fixes false optimistic-concurrency failures:
+    /// new aggregate children incorrectly marked Modified (empty original RowVersion),
+    /// and tracked parents whose OriginalValue was cleared.
+    /// </summary>
+    private void NormalizeRowVersionEntityStates()
+    {
+        foreach (var entry in ChangeTracker.Entries<BaseEntity>().ToList())
+        {
+            if (entry.State != EntityState.Modified)
+            {
+                continue;
+            }
+
+            var rowVersionProperty = entry.Property(nameof(BaseEntity.RowVersion));
+            var original = rowVersionProperty.OriginalValue as byte[];
+            var current = rowVersionProperty.CurrentValue as byte[];
+
+            var originalMissing = original is null || original.Length == 0;
+            var currentMissing = current is null || current.Length == 0;
+
+            if (originalMissing && currentMissing)
+            {
+                // Never persisted. Soft-deleted drafts should not be written; others are inserts.
+                entry.State = entry.Entity.IsDeleted ? EntityState.Detached : EntityState.Added;
+                continue;
+            }
+
+            if (originalMissing && !currentMissing)
+            {
+                // Keep concurrency check against the known token loaded on the entity.
+                rowVersionProperty.OriginalValue = current;
+            }
+        }
     }
 
     private static void ApplySoftDeleteFilters(ModelBuilder modelBuilder)

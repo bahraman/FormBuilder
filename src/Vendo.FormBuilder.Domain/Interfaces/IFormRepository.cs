@@ -44,4 +44,9 @@ public interface IFormRepository
     /// Sets the original concurrency token on a field so SaveChanges fails if the row changed.
     /// </summary>
     void SetOriginalRowVersion(FormField field, byte[] rowVersion);
+
+    /// <summary>
+    /// Ensures a newly created field (and its options/rules) are tracked as Added.
+    /// </summary>
+    void AddField(FormField field);
 }
