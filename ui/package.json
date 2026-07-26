@@ -1,7 +1,8 @@
 {
-  "name": "@vendo/form-builder-ui",
+  "name": "vendo-form-builder-ui",
   "private": true,
   "version": "0.1.0",
+  "description": "Vendo Form Builder React UI — intended local path D:\\\\Delino\\\\Sources\\\\Vendo-FormBuilder-Ui",
   "type": "module",
   "scripts": {
     "dev": "vite",

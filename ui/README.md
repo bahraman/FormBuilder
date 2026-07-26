@@ -1,85 +1,93 @@
-# Vendo Form Builder UI
+# Vendo-FormBuilder-Ui
 
-Standalone React (Vite) UI for the Vendo-FormBuilder API.
+Standalone **React + Vite** UI for the Vendo-FormBuilder API.
 
-This project is intentionally separate so it can be developed alone first, then embedded into **Vendo-designer** (`D:\Delino\Sources\Vendo-designer`).
+**Intended local path on your machine:**
 
-## Stack
+```text
+D:\Delino\Sources\Vendo-FormBuilder-Ui
+```
 
-- React 19 + TypeScript
-- Vite (not Next.js)
-- React Router
-- Thin local UI primitives in `src/ui/*` (Button, Input, Modal, …) ready to swap with Vendo-designer components
+Sibling projects:
 
-## Run locally
+| Path | Role |
+|------|------|
+| `D:\Delino\Sources\FormBuilder` | ASP.NET FormBuilder API |
+| `D:\Delino\Sources\Vendo-designer` | Host app (embed this UI later) |
+| `D:\Delino\Sources\Vendo-FormBuilder-Ui` | This UI (standalone first) |
 
-1. Start the FormBuilder API on `http://localhost:5000`
-2. In this folder:
+> This cloud agent cannot write to your local `D:\` drive. Copy/clone the project there using the steps below.
+
+## Create the folder on your PC (Windows)
+
+### Option A — copy from FormBuilder repo (already pulled)
+
+```powershell
+New-Item -ItemType Directory -Force -Path "D:\Delino\Sources\Vendo-FormBuilder-Ui" | Out-Null
+Copy-Item -Path "D:\Delino\Sources\FormBuilder\ui\*" -Destination "D:\Delino\Sources\Vendo-FormBuilder-Ui" -Recurse -Force
+cd D:\Delino\Sources\Vendo-FormBuilder-Ui
+npm install
+npm run dev
+```
+
+If your FormBuilder clone path differs, adjust the source path (the UI currently lives in the FormBuilder repo under `ui/`).
+
+### Option B — download the zip artifact
+
+1. Download `Vendo-FormBuilder-Ui.zip` from the cloud agent artifacts.
+2. Extract to `D:\Delino\Sources\Vendo-FormBuilder-Ui`
+3. Run:
+
+```powershell
+cd D:\Delino\Sources\Vendo-FormBuilder-Ui
+npm install
+npm run dev
+```
+
+### Optional — make it its own Git repo
+
+```powershell
+cd D:\Delino\Sources\Vendo-FormBuilder-Ui
+git init
+git add .
+git commit -m "chore: initial Vendo-FormBuilder-Ui"
+# then create github.com/bahraman/Vendo-FormBuilder-Ui in the browser and:
+# git remote add origin https://github.com/bahraman/Vendo-FormBuilder-Ui.git
+# git push -u origin main
+```
+
+(The cloud GitHub token cannot create that repo for you.)
+
+## Run
+
+1. Start FormBuilder API on `http://localhost:5000`
+2. In this project:
 
 ```bash
 npm install
 npm run dev
 ```
 
-Open `http://localhost:5173`
+Open `http://localhost:5173` — Vite proxies `/api` → `localhost:5000`.
 
-Vite proxies `/api` → `http://localhost:5000`.
-
-Optional env (copy `.env.example`):
-
-```env
-VITE_API_BASE_URL=
-VITE_DEFAULT_SUBSCRIBER_ID=1
-VITE_DEFAULT_RESTAURANT_ID=
-```
-
-## Features (v1)
-
-- List / search / filter forms by tenant
-- Create draft form
-- Edit form metadata
-- Add / edit / delete / reorder fields
-- Options for selectable field types
-- Live preview
-- Publish / archive / create new version / delete
-
-## Embed into Vendo-designer
-
-Vendo-designer was not available in the cloud agent environment. Integration path:
-
-1. Keep this folder as a sibling package, or copy/link `ui` into the designer monorepo.
-2. Import the embed entry:
+## Embed into Vendo-designer later
 
 ```tsx
-import { FormBuilderApp } from '@vendo/form-builder-ui/embed'
-// or relative: ../../FormBuilder/ui/src/embed
+import { FormBuilderApp } from 'D:/Delino/Sources/Vendo-FormBuilder-Ui/src/embed'
+// or a workspace/package alias you configure
 
-export function FormBuilderRoute() {
-  return (
-    <FormBuilderApp
-      basename="/form-builder"
-      subscriberId={currentSubscriberId}
-      restaurantId={currentRestaurantId}
-      actor={currentUserName}
-    />
-  )
-}
+<FormBuilderApp
+  basename="/form-builder"
+  subscriberId={currentSubscriberId}
+  restaurantId={currentRestaurantId}
+  actor={currentUserName}
+/>
 ```
 
-3. Replace thin primitives under `src/ui/` with Vendo-designer components (same prop names where possible).
-4. Map CSS variables in `src/styles/tokens.css` to Vendo design tokens (`[data-theme='vendo']`).
+Then replace thin primitives in `src/ui/*` with Vendo-designer components.
 
-Suggested host route: `/form-builder/*`
+## Stack
 
-## Folder map
-
-```
-src/
-  FormBuilderApp.tsx   # embeddable app shell
-  embed.ts             # public exports for host apps
-  api/                 # FormBuilder REST client
-  ui/                  # swappable design-system adapters
-  pages/               # Forms list + editor
-  features/            # create modal, field editor, preview
-  context/             # tenant (subscriber/restaurant) state
-```
+- React 19 + TypeScript
+- Vite (not Next.js)
+- React Router
