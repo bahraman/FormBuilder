@@ -18,5 +18,11 @@ public enum FieldType
     MultiSelect = 13,
     Password = 14,
     FileUpload = 15,
-    ImageUpload = 16
+    ImageUpload = 16,
+
+    /// <summary>Lookup field whose value is a <see cref="Entities.Province"/> id.</summary>
+    Province = 17,
+
+    /// <summary>Lookup field whose value is a <see cref="Entities.City"/> id.</summary>
+    City = 18
 }

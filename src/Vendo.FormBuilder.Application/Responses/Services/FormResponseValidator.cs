@@ -127,6 +127,14 @@ public static class FormResponseValidator
             case FieldType.Checkbox:
                 EnsureOptionsSelected(field, rawValue!, failures);
                 break;
+            case FieldType.Province:
+            case FieldType.City:
+                // Lookup fields carry the selected province/city id from /api/provinces.
+                if (!int.TryParse(rawValue, NumberStyles.Integer, CultureInfo.InvariantCulture, out var lookupId) || lookupId <= 0)
+                {
+                    failures.Add(Failure(propertyName, $"{field.Label} must be a valid identifier."));
+                }
+                break;
         }
 
         foreach (var rule in field.ValidationRules.Where(r => !r.IsDeleted))

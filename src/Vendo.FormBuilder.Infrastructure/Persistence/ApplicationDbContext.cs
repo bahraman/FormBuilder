@@ -17,6 +17,8 @@ public sealed class ApplicationDbContext : DbContext
     public DbSet<FieldValidationRule> FieldValidationRules => Set<FieldValidationRule>();
     public DbSet<FormResponse> FormResponses => Set<FormResponse>();
     public DbSet<FormResponseValue> FormResponseValues => Set<FormResponseValue>();
+    public DbSet<Province> Provinces => Set<Province>();
+    public DbSet<City> Cities => Set<City>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

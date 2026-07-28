@@ -26,6 +26,7 @@ public static class DependencyInjection
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IFormRepository, FormRepository>();
         services.AddScoped<IFormResponseRepository, FormResponseRepository>();
+        services.AddScoped<ILocationRepository, LocationRepository>();
 
         return services;
     }

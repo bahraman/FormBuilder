@@ -4,9 +4,16 @@
 @formId = 1
 @fieldId = 1
 @responseId = 00000000-0000-0000-0000-000000000000
+@provinceId = 8
 
 ### Health
 GET {{host}}/api/health
+
+### List provinces (lookup for Province fields)
+GET {{host}}/api/provinces
+
+### List cities of a province (lookup for City fields)
+GET {{host}}/api/provinces/{{provinceId}}/cities
 
 ### List forms for subscriber (all restaurants + shared)
 GET {{host}}/api/forms?subscriberId={{subscriberId}}&pageNumber=1&pageSize=20

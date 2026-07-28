@@ -79,7 +79,22 @@ The initial version intentionally does **not** include:
 
 ## Supported Field Types
 
-`Text`, `MultilineText`, `Number`, `Decimal`, `Date`, `Time`, `DateTime`, `Email`, `Phone`, `Url`, `Checkbox`, `RadioButton`, `Dropdown`, `MultiSelect`, `Password`, `FileUpload`, `ImageUpload`
+`Text`, `MultilineText`, `Number`, `Decimal`, `Date`, `Time`, `DateTime`, `Email`, `Phone`, `Url`, `Checkbox`, `RadioButton`, `Dropdown`, `MultiSelect`, `Password`, `FileUpload`, `ImageUpload`, `Province`, `City`
+
+### Province and City lookups
+
+`Province` and `City` are lookup field types: they carry no per-field options. A client renders them
+by loading the shared reference data, then submits the selected **id** as the response value.
+
+| Endpoint | Returns |
+|----------|---------|
+| `GET /api/provinces` | `[{ "id": 1, "name": "…", "orderIndex": 1 }]` |
+| `GET /api/provinces/{provinceId}/cities` | `[{ "id": 101, "provinceId": 1, "name": "…", "orderIndex": 1 }]` |
+
+Both lists are ordered by `orderIndex`. Unknown `provinceId` returns `404`; a non-positive one returns `400`.
+
+The data is reference data shared by every subscriber and is seeded by the
+`AddProvinceAndCityLookups` migration, so there are no create/update/delete endpoints.
 
 ## Getting Started
 
@@ -147,6 +162,8 @@ Kestrel and Docker are unaffected.
 | `POST` | `/api/forms/{id}/responses?subscriberId=` | Submit response |
 | `GET` | `/api/forms/{id}/responses?subscriberId=` | List responses |
 | `GET` | `/api/responses/{id}?subscriberId=` | Get response by id |
+| `GET` | `/api/provinces` | List provinces ordered by `orderIndex` |
+| `GET` | `/api/provinces/{provinceId}/cities` | List a province's cities ordered by `orderIndex` |
 | `GET` | `/api/health` | Health check |
 
 ### Example: Create form → add field → publish → submit
