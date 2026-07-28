@@ -121,6 +121,13 @@ dotnet run --project src/Vendo.FormBuilder.Api
 dotnet test
 ```
 
+### Troubleshooting: `PUT` / `DELETE` return 405 on IIS
+
+IIS enables WebDAV by default, and it answers `405 Method Not Allowed` for `PUT` and `DELETE`
+before the request reaches ASP.NET Core (`GET` and `POST` keep working). `src/Vendo.FormBuilder.Api/web.config`
+removes the WebDAV module and handler; restart the site or app pool after deploying it.
+Kestrel and Docker are unaffected.
+
 ## API Overview
 
 | Method | Endpoint | Description |
