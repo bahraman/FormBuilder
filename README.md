@@ -71,9 +71,8 @@ The initial version intentionally does **not** include:
 - Authentication / Authorization / User management
 - Workflow engine
 - Notifications
+- Frontend UI
 - Reporting
-
-Frontend UI lives in [`ui/`](./ui) (React + Vite). It can run standalone and later be embedded into Vendo-designer.
 
 - Optional `createdBy` / `updatedBy` / `submittedBy` strings are audit metadata only — not a user system.
 - Form and field identifiers (`FormId` / `FieldId`) are `bigint` (`long` in .NET). Response/option/rule ids remain Guid.
@@ -114,12 +113,7 @@ dotnet ef database update \
 
 # Run API
 dotnet run --project src/Vendo.FormBuilder.Api
-
-# Run UI (separate terminal) — http://localhost:5173
-cd ui && npm install && npm run dev
 ```
-
-See [`ui/README.md`](./ui/README.md) for embedding into Vendo-designer.
 
 ### Tests
 

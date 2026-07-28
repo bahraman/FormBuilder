@@ -57,12 +57,3 @@ coverage/
 
 ## Docker
 *.log
-
-## Node / UI
-node_modules/
-dist/
-ui/dist/
-ui/node_modules/
-*.tsbuildinfo
-.npm
-.vite/
