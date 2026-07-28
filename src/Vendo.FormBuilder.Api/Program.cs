@@ -55,11 +55,11 @@ try
     });
 
     var app = builder.Build();
-
+    app.UseHttpsRedirection();
     app.UseMiddleware<ExceptionHandlingMiddleware>();
     app.UseSerilogRequestLogging();
 
-    if (app.Environment.IsDevelopment())
+   //if (app.Environment.IsDevelopment())
     {
         app.UseSwagger();
         app.UseSwaggerUI(options =>
