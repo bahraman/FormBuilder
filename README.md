@@ -162,6 +162,8 @@ Kestrel and Docker are unaffected.
 | `POST` | `/api/forms/{id}/responses?subscriberId=` | Submit response |
 | `GET` | `/api/forms/{id}/responses?subscriberId=` | List responses |
 | `GET` | `/api/responses/{id}?subscriberId=` | Get response by id |
+| `PUT` | `/api/responses/{id}?subscriberId=` | Update response |
+| `DELETE` | `/api/responses/{id}?subscriberId=` | Soft-delete response |
 | `GET` | `/api/provinces` | List provinces ordered by `orderIndex` |
 | `GET` | `/api/provinces/{provinceId}/cities` | List a province's cities ordered by `orderIndex` |
 | `GET` | `/api/health` | Health check |

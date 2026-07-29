@@ -1,5 +1,7 @@
 using Vendo.FormBuilder.Application.Common.Models;
+using Vendo.FormBuilder.Application.Responses.Commands.DeleteFormResponse;
 using Vendo.FormBuilder.Application.Responses.Commands.SubmitFormResponse;
+using Vendo.FormBuilder.Application.Responses.Commands.UpdateFormResponse;
 using Vendo.FormBuilder.Application.Responses.Dtos;
 using Vendo.FormBuilder.Application.Responses.Queries.GetFormResponseById;
 using Vendo.FormBuilder.Application.Responses.Queries.GetFormResponses;
@@ -90,8 +92,58 @@ public sealed class FormResponsesController : ControllerBase
             cancellationToken);
         return Ok(result);
     }
+
+    /// <summary>
+    /// Update an existing form response within the caller's tenant scope.
+    /// </summary>
+    [HttpPut("responses/{responseId:guid}")]
+    [ProducesResponseType(typeof(FormResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<FormResponseDto>> UpdateResponse(
+        Guid responseId,
+        [FromQuery] int subscriberId,
+        [FromBody] UpdateFormResponseRequest request,
+        [FromQuery] int? restaurantId = null,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _sender.Send(
+            new UpdateFormResponseCommand(
+                responseId,
+                subscriberId,
+                restaurantId,
+                request.Values,
+                request.UpdatedBy),
+            cancellationToken);
+
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Soft-delete a form response within the caller's tenant scope.
+    /// </summary>
+    [HttpDelete("responses/{responseId:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeleteResponse(
+        Guid responseId,
+        [FromQuery] int subscriberId,
+        [FromQuery] int? restaurantId = null,
+        [FromQuery] string? deletedBy = null,
+        CancellationToken cancellationToken = default)
+    {
+        await _sender.Send(
+            new DeleteFormResponseCommand(responseId, subscriberId, restaurantId, deletedBy),
+            cancellationToken);
+
+        return NoContent();
+    }
 }
 
 public sealed record SubmitFormResponseRequest(
     IReadOnlyList<FormResponseValueInputDto> Values,
     string? SubmittedBy = null);
+
+public sealed record UpdateFormResponseRequest(
+    IReadOnlyList<FormResponseValueInputDto> Values,
+    string? UpdatedBy = null);

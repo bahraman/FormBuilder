@@ -21,6 +21,13 @@ public sealed class FormResponseRepository : IFormResponseRepository
             .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
     }
 
+    public Task<FormResponse?> GetByIdForUpdateAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return _dbContext.FormResponses
+            .Include(r => r.Values)
+            .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
+    }
+
     public async Task<(IReadOnlyList<FormResponse> Items, int TotalCount)> GetByFormIdPagedAsync(
         long formId,
         int pageNumber,

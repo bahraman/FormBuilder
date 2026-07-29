@@ -31,4 +31,12 @@ public class FormResponseValue : BaseEntity
             Value = value
         };
     }
+
+    public void SoftDelete(string? deletedBy = null)
+    {
+        IsDeleted = true;
+        DeletedAtUtc = DateTime.UtcNow;
+        UpdatedBy = deletedBy;
+        UpdatedAtUtc = DateTime.UtcNow;
+    }
 }

@@ -43,11 +43,34 @@ public class FormResponse : BaseEntity
         return responseValue;
     }
 
+    public void ReplaceValues(
+        IEnumerable<(long FieldId, string FieldName, string? Value)> values,
+        string? updatedBy = null)
+    {
+        foreach (var existing in _values.Where(v => !v.IsDeleted))
+        {
+            existing.SoftDelete(updatedBy);
+        }
+
+        foreach (var value in values)
+        {
+            AddValue(value.FieldId, value.FieldName, value.Value);
+        }
+
+        UpdatedBy = updatedBy;
+        UpdatedAtUtc = DateTime.UtcNow;
+    }
+
     public void SoftDelete(string? deletedBy = null)
     {
         IsDeleted = true;
         DeletedAtUtc = DateTime.UtcNow;
         UpdatedBy = deletedBy;
         UpdatedAtUtc = DateTime.UtcNow;
+
+        foreach (var value in _values.Where(v => !v.IsDeleted))
+        {
+            value.SoftDelete(deletedBy);
+        }
     }
 }
