@@ -1,0 +1,15 @@
+using Vendo.FormBuilder.Domain.Entities;
+
+namespace Vendo.FormBuilder.Domain.Interfaces;
+
+public interface IFormResponseRepository
+{
+    Task<FormResponse?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<FormResponse?> GetByIdForUpdateAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<(IReadOnlyList<FormResponse> Items, int TotalCount)> GetByFormIdPagedAsync(
+        long formId,
+        int pageNumber,
+        int pageSize,
+        CancellationToken cancellationToken = default);
+    Task AddAsync(FormResponse response, CancellationToken cancellationToken = default);
+}
