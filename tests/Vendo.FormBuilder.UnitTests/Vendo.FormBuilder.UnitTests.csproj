@@ -22,6 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Vendo.FormBuilder.Api\Vendo.FormBuilder.Api.csproj" />
     <ProjectReference Include="..\..\src\Vendo.FormBuilder.Application\Vendo.FormBuilder.Application.csproj" />
     <ProjectReference Include="..\..\src\Vendo.FormBuilder.Domain\Vendo.FormBuilder.Domain.csproj" />
     <ProjectReference Include="..\..\src\Vendo.FormBuilder.Infrastructure\Vendo.FormBuilder.Infrastructure.csproj" />
