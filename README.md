@@ -61,20 +61,21 @@ Access rules:
 
 Tenant scope is passed as:
 
-- **Create**: `subscriberId` / `restaurantId` in the request body (ownership)
+- **Create / update form (admin)**: `x-subscriber-id` header (ownership/scope); optional `restaurantId` remains in body (create) or query (update)
 - **All other endpoints**: required query param `subscriberId`, optional `restaurantId`
 
 ### Admin form create/update token headers
 
-`POST /api/forms` and `PUT /api/forms/{formId}` require gateway identity headers:
+`POST /api/forms` and `PUT /api/forms/{formId}` take tenant/identity **only from headers** (not query or body):
 
 | Header | Purpose |
 |--------|---------|
-| `x-user-id` | Calling user id (accepted from gateway) |
+| `x-user-id` | Calling user id |
 | `x-role-id` | Role id; `1013` is treated as admin and bypasses subscriber membership |
+| `x-subscriber-id` | Target subscriber for create/update |
 | `x-subscriber-ids` | JSON array of subscriber ids the caller may access, e.g. `[1,2,3]` |
 
-Access is granted when the caller is admin (`x-role-id = 1013`) **or** the target `subscriberId` is present in `x-subscriber-ids`. Otherwise the API returns `401 Unauthorized` with `"Invalid token"`.
+Access is granted when the caller is admin (`x-role-id = 1013`) **or** `x-subscriber-id` is present in `x-subscriber-ids`. Otherwise the API returns `401 Unauthorized` with `"Invalid token"`.
 
 Data-entry endpoints (`/api/forms/{formId}/responses`, `/api/responses/...`) do **not** use these headers.
 

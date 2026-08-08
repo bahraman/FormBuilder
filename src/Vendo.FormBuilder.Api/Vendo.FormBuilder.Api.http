@@ -24,9 +24,12 @@ GET {{host}}/api/forms?subscriberId={{subscriberId}}&restaurantId={{restaurantId
 ### Create subscriber-level form (RestaurantId null = shared)
 POST {{host}}/api/forms
 Content-Type: application/json
+x-user-id: 1
+x-role-id: 1013
+x-subscriber-id: {{subscriberId}}
+x-subscriber-ids: [{{subscriberId}}]
 
 {
-  "subscriberId": {{subscriberId}},
   "name": "Contact Us",
   "description": "Shared across restaurants",
   "slug": "contact-us",
@@ -36,9 +39,12 @@ Content-Type: application/json
 ### Create restaurant-specific form
 POST {{host}}/api/forms
 Content-Type: application/json
+x-user-id: 1
+x-role-id: 1013
+x-subscriber-id: {{subscriberId}}
+x-subscriber-ids: [{{subscriberId}}]
 
 {
-  "subscriberId": {{subscriberId}},
   "restaurantId": {{restaurantId}},
   "name": "Local Feedback",
   "description": "Only for one restaurant",
