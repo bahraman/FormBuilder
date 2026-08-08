@@ -1,3 +1,4 @@
+using Vendo.FormBuilder.Api.Security;
 using Vendo.FormBuilder.Application.Common.Models;
 using Vendo.FormBuilder.Application.Forms.Commands.ArchiveForm;
 using Vendo.FormBuilder.Application.Forms.Commands.CreateForm;
@@ -69,15 +70,26 @@ public sealed class FormsController : ControllerBase
 
     /// <summary>
     /// Create a new draft form owned by a subscriber (optionally restaurant-specific).
+    /// Requires gateway headers: x-user-id, x-role-id, x-subscriber-ids.
     /// </summary>
     [HttpPost]
     [ProducesResponseType(typeof(FormDetailDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<FormDetailDto>> CreateForm(
         [FromBody] CreateFormRequest request,
+        [FromHeader(Name = "x-user-id")] int userId,
+        [FromHeader(Name = "x-subscriber-ids")] string? subscriberIds,
+        [FromHeader(Name = "x-role-id")] int roleId,
         CancellationToken cancellationToken)
     {
+        _ = userId;
+        if (!TokenAccess.HasAccess(roleId, request.SubscriberId, subscriberIds))
+        {
+            return Unauthorized("Invalid token");
+        }
+
         var result = await _sender.Send(
             new CreateFormCommand(
                 request.SubscriberId,
@@ -96,18 +108,29 @@ public sealed class FormsController : ControllerBase
 
     /// <summary>
     /// Update a draft form's metadata. Requires RowVersion for optimistic concurrency.
+    /// Requires gateway headers: x-user-id, x-role-id, x-subscriber-ids.
     /// </summary>
     [HttpPut("{formId:long}")]
     [ProducesResponseType(typeof(FormDetailDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<FormDetailDto>> UpdateForm(
         long formId,
         [FromQuery] int subscriberId,
         [FromBody] UpdateFormRequest request,
+        [FromHeader(Name = "x-user-id")] int userId,
+        [FromHeader(Name = "x-subscriber-ids")] string? subscriberIds,
+        [FromHeader(Name = "x-role-id")] int roleId,
         [FromQuery] int? restaurantId = null,
         CancellationToken cancellationToken = default)
     {
+        _ = userId;
+        if (!TokenAccess.HasAccess(roleId, subscriberId, subscriberIds))
+        {
+            return Unauthorized("Invalid token");
+        }
+
         var result = await _sender.Send(
             new UpdateFormCommand(
                 formId,
