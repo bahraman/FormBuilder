@@ -5,6 +5,8 @@
 @fieldId = 1
 @responseId = 00000000-0000-0000-0000-000000000000
 @provinceId = 8
+@userId = 1
+@roleId = 1013
 
 ### Health
 GET {{host}}/api/health
@@ -16,16 +18,24 @@ GET {{host}}/api/provinces
 GET {{host}}/api/provinces/{{provinceId}}/cities
 
 ### List forms for subscriber (all restaurants + shared)
-GET {{host}}/api/forms?subscriberId={{subscriberId}}&pageNumber=1&pageSize=20
+GET {{host}}/api/forms?pageNumber=1&pageSize=20
+x-user-id: {{userId}}
+x-role-id: {{roleId}}
+x-subscriber-id: {{subscriberId}}
+x-subscriber-ids: [{{subscriberId}}]
 
 ### List forms visible to a restaurant (restaurant-specific + shared)
-GET {{host}}/api/forms?subscriberId={{subscriberId}}&restaurantId={{restaurantId}}&pageNumber=1&pageSize=20
+GET {{host}}/api/forms?restaurantId={{restaurantId}}&pageNumber=1&pageSize=20
+x-user-id: {{userId}}
+x-role-id: {{roleId}}
+x-subscriber-id: {{subscriberId}}
+x-subscriber-ids: [{{subscriberId}}]
 
 ### Create subscriber-level form (RestaurantId null = shared)
 POST {{host}}/api/forms
 Content-Type: application/json
-x-user-id: 1
-x-role-id: 1013
+x-user-id: {{userId}}
+x-role-id: {{roleId}}
 x-subscriber-id: {{subscriberId}}
 x-subscriber-ids: [{{subscriberId}}]
 
@@ -39,8 +49,8 @@ x-subscriber-ids: [{{subscriberId}}]
 ### Create restaurant-specific form
 POST {{host}}/api/forms
 Content-Type: application/json
-x-user-id: 1
-x-role-id: 1013
+x-user-id: {{userId}}
+x-role-id: {{roleId}}
 x-subscriber-id: {{subscriberId}}
 x-subscriber-ids: [{{subscriberId}}]
 
@@ -53,11 +63,19 @@ x-subscriber-ids: [{{subscriberId}}]
 }
 
 ### Get form
-GET {{host}}/api/forms/{{formId}}?subscriberId={{subscriberId}}
+GET {{host}}/api/forms/{{formId}}
+x-user-id: {{userId}}
+x-role-id: {{roleId}}
+x-subscriber-id: {{subscriberId}}
+x-subscriber-ids: [{{subscriberId}}]
 
 ### Add text field
-POST {{host}}/api/forms/{{formId}}/fields?subscriberId={{subscriberId}}
+POST {{host}}/api/forms/{{formId}}/fields
 Content-Type: application/json
+x-user-id: {{userId}}
+x-role-id: {{roleId}}
+x-subscriber-id: {{subscriberId}}
+x-subscriber-ids: [{{subscriberId}}]
 
 {
   "name": "fullName",
@@ -73,14 +91,18 @@ Content-Type: application/json
 }
 
 ### Publish form
-POST {{host}}/api/forms/{{formId}}/publish?subscriberId={{subscriberId}}
+POST {{host}}/api/forms/{{formId}}/publish
 Content-Type: application/json
+x-user-id: {{userId}}
+x-role-id: {{roleId}}
+x-subscriber-id: {{subscriberId}}
+x-subscriber-ids: [{{subscriberId}}]
 
 {
   "actor": "admin"
 }
 
-### Submit response
+### Submit response (data entry — still uses query subscriberId)
 POST {{host}}/api/forms/{{formId}}/responses?subscriberId={{subscriberId}}&restaurantId={{restaurantId}}
 Content-Type: application/json
 
@@ -98,8 +120,12 @@ GET {{host}}/api/forms/{{formId}}/responses?subscriberId={{subscriberId}}&pageNu
 GET {{host}}/api/responses/{{responseId}}?subscriberId={{subscriberId}}
 
 ### Create new version
-POST {{host}}/api/forms/{{formId}}/versions?subscriberId={{subscriberId}}
+POST {{host}}/api/forms/{{formId}}/versions
 Content-Type: application/json
+x-user-id: {{userId}}
+x-role-id: {{roleId}}
+x-subscriber-id: {{subscriberId}}
+x-subscriber-ids: [{{subscriberId}}]
 
 {
   "actor": "admin"
