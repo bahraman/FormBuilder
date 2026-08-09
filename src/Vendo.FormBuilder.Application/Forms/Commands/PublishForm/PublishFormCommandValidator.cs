@@ -9,6 +9,5 @@ public sealed class PublishFormCommandValidator : AbstractValidator<PublishFormC
     {
         RuleFor(x => x.FormId).NotEmpty();
         RuleFor(x => x.SubscriberId).RequiredSubscriberId();
-        RuleFor(x => x.RestaurantId).OptionalRestaurantId();
     }
 }

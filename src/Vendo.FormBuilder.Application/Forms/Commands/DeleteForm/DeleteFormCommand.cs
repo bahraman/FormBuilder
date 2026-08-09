@@ -7,7 +7,6 @@ namespace Vendo.FormBuilder.Application.Forms.Commands.DeleteForm;
 public sealed record DeleteFormCommand(
     long FormId,
     int SubscriberId,
-    int? RestaurantId = null,
     string? DeletedBy = null) : IRequest;
 
 public sealed class DeleteFormCommandHandler : IRequestHandler<DeleteFormCommand>
@@ -27,7 +26,6 @@ public sealed class DeleteFormCommandHandler : IRequestHandler<DeleteFormCommand
             _formRepository,
             request.FormId,
             request.SubscriberId,
-            request.RestaurantId,
             withDetails: true,
             cancellationToken);
 

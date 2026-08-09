@@ -10,17 +10,13 @@ public sealed class FormTests
 {
     private const int SubscriberA = 1;
     private const int SubscriberB = 2;
-    private const int Restaurant1 = 10;
-    private const int Restaurant2 = 20;
 
     [Fact]
-    public void Create_ShouldRequireSubscriberAndAllowNullRestaurant()
+    public void Create_ShouldRequireSubscriber()
     {
-        var form = Form.Create(SubscriberA, null, "Contact Us", "Collect inquiries", "contact-us", "admin");
+        var form = Form.Create(SubscriberA, "Contact Us", "Collect inquiries", "contact-us", "admin");
 
         form.SubscriberId.Should().Be(SubscriberA);
-        form.RestaurantId.Should().BeNull();
-        form.IsSubscriberLevel.Should().BeTrue();
         form.Name.Should().Be("Contact Us");
         form.Slug.Should().Be("contact-us");
         form.Status.Should().Be(FormStatus.Draft);
@@ -28,18 +24,9 @@ public sealed class FormTests
     }
 
     [Fact]
-    public void Create_WithRestaurant_ShouldBeRestaurantSpecific()
-    {
-        var form = Form.Create(SubscriberA, Restaurant1, "Local Menu", null, "local-menu");
-
-        form.RestaurantId.Should().Be(Restaurant1);
-        form.IsSubscriberLevel.Should().BeFalse();
-    }
-
-    [Fact]
     public void Create_WithEmptySubscriber_ShouldThrow()
     {
-        var act = () => Form.Create(0, null, "Name", null, "slug");
+        var act = () => Form.Create(0, "Name", null, "slug");
 
         act.Should().Throw<DomainException>().WithMessage("*SubscriberId*");
     }
@@ -47,7 +34,7 @@ public sealed class FormTests
     [Fact]
     public void EnsureAccessibleTo_ShouldBlockOtherSubscriber()
     {
-        var form = Form.Create(SubscriberA, null, "Survey", null, "survey");
+        var form = Form.Create(SubscriberA, "Survey", null, "survey");
         var otherSubscriber = TenantScope.ForSubscriber(SubscriberB);
 
         var act = () => form.EnsureAccessibleTo(otherSubscriber);
@@ -56,34 +43,12 @@ public sealed class FormTests
     }
 
     [Fact]
-    public void EnsureAccessibleTo_ShouldBlockOtherRestaurant()
+    public void EnsureAccessibleTo_ShouldAllowSameSubscriber()
     {
-        var form = Form.Create(SubscriberA, Restaurant1, "Survey", null, "survey");
-        var otherRestaurant = TenantScope.ForSubscriber(SubscriberA, Restaurant2);
+        var form = Form.Create(SubscriberA, "Shared", null, "shared");
+        var scope = TenantScope.ForSubscriber(SubscriberA);
 
-        var act = () => form.EnsureAccessibleTo(otherRestaurant);
-
-        act.Should().Throw<NotFoundException>();
-    }
-
-    [Fact]
-    public void EnsureAccessibleTo_ShouldAllowSharedFormForAnyRestaurantOfSubscriber()
-    {
-        var form = Form.Create(SubscriberA, null, "Shared", null, "shared");
-        var restaurantScope = TenantScope.ForSubscriber(SubscriberA, Restaurant1);
-
-        var act = () => form.EnsureAccessibleTo(restaurantScope);
-
-        act.Should().NotThrow();
-    }
-
-    [Fact]
-    public void EnsureAccessibleTo_SubscriberWide_ShouldAccessRestaurantForm()
-    {
-        var form = Form.Create(SubscriberA, Restaurant1, "Local", null, "local");
-        var subscriberWide = TenantScope.ForSubscriber(SubscriberA);
-
-        var act = () => form.EnsureAccessibleTo(subscriberWide);
+        var act = () => form.EnsureAccessibleTo(scope);
 
         act.Should().NotThrow();
     }
@@ -91,7 +56,7 @@ public sealed class FormTests
     [Fact]
     public void Publish_WithoutFields_ShouldThrow()
     {
-        var form = Form.Create(SubscriberA, null, "Empty", null, "empty");
+        var form = Form.Create(SubscriberA, "Empty", null, "empty");
 
         var act = () => form.Publish();
 
@@ -102,7 +67,7 @@ public sealed class FormTests
     [Fact]
     public void Publish_WithFields_ShouldSucceed()
     {
-        var form = Form.Create(SubscriberA, Restaurant1, "Survey", null, "survey");
+        var form = Form.Create(SubscriberA, "Survey", null, "survey");
         form.AddField("email", "Email", FieldType.Email, 0, isRequired: true);
 
         form.Publish("admin");
@@ -114,7 +79,7 @@ public sealed class FormTests
     [Fact]
     public void Update_WhenPublished_ShouldThrow()
     {
-        var form = Form.Create(SubscriberA, null, "Survey", null, "survey");
+        var form = Form.Create(SubscriberA, "Survey", null, "survey");
         form.AddField("name", "Name", FieldType.Text, 0);
         form.Publish();
 
@@ -126,7 +91,7 @@ public sealed class FormTests
     [Fact]
     public void CreateNewVersion_ShouldPreserveTenantOwnership()
     {
-        var form = Form.Create(SubscriberA, Restaurant1, "Survey", "Desc", "survey");
+        var form = Form.Create(SubscriberA, "Survey", "Desc", "survey");
         var field = form.AddField("rating", "Rating", FieldType.Dropdown, 0, isRequired: true);
         field.AddOption("Good", "good", 0, true);
         field.AddOption("Bad", "bad", 1);
@@ -135,7 +100,6 @@ public sealed class FormTests
         var next = form.CreateNewVersion("editor");
 
         next.SubscriberId.Should().Be(SubscriberA);
-        next.RestaurantId.Should().Be(Restaurant1);
         next.Version.Should().Be(2);
         next.Status.Should().Be(FormStatus.Draft);
         next.ParentFormId.Should().Be(form.Id);
@@ -145,7 +109,7 @@ public sealed class FormTests
     [Fact]
     public void ReorderFields_ShouldUpdateDisplayOrder()
     {
-        var form = Form.Create(SubscriberA, null, "Survey", null, "survey");
+        var form = Form.Create(SubscriberA, "Survey", null, "survey");
         var first = form.AddField("a", "A", FieldType.Text, 0);
         var second = form.AddField("b", "B", FieldType.Text, 1);
 
@@ -162,7 +126,7 @@ public sealed class FormTests
     [Fact]
     public void SoftDelete_ShouldMarkFormAndFieldsDeleted()
     {
-        var form = Form.Create(SubscriberA, null, "Survey", null, "survey");
+        var form = Form.Create(SubscriberA, "Survey", null, "survey");
         form.AddField("a", "A", FieldType.Text, 0);
 
         form.SoftDelete("admin");

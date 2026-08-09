@@ -11,7 +11,6 @@ namespace Vendo.FormBuilder.Application.Responses.Commands.UpdateFormResponse;
 public sealed record UpdateFormResponseCommand(
     Guid ResponseId,
     int SubscriberId,
-    int? RestaurantId,
     IReadOnlyList<FormResponseValueInputDto> Values,
     string? UpdatedBy = null) : IRequest<FormResponseDto>;
 
@@ -43,7 +42,6 @@ public sealed class UpdateFormResponseCommandHandler
             _formRepository,
             response.FormId,
             request.SubscriberId,
-            request.RestaurantId,
             withDetails: true,
             cancellationToken);
 

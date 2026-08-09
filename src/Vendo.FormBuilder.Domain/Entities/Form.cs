@@ -12,12 +12,6 @@ public class Form : LongEntity
     /// <summary>Required owner. Forms are always isolated by subscriber.</summary>
     public int SubscriberId { get; private set; }
 
-    /// <summary>
-    /// Optional restaurant owner. Null = subscriber-level (shared across restaurants).
-    /// Set = restaurant-specific and isolated from other restaurants.
-    /// </summary>
-    public int? RestaurantId { get; private set; }
-
     public string Name { get; private set; } = string.Empty;
     public string? Description { get; private set; }
     public string Slug { get; private set; } = string.Empty;
@@ -28,8 +22,6 @@ public class Form : LongEntity
     public DateTime? PublishedAtUtc { get; private set; }
     public DateTime? ArchivedAtUtc { get; private set; }
 
-    public bool IsSubscriberLevel => RestaurantId is null;
-
     public IReadOnlyCollection<FormField> Fields => _fields.AsReadOnly();
     public IReadOnlyCollection<FormResponse> Responses => _responses.AsReadOnly();
 
@@ -39,7 +31,6 @@ public class Form : LongEntity
 
     public static Form Create(
         int subscriberId,
-        int? restaurantId,
         string name,
         string? description,
         string slug,
@@ -48,12 +39,11 @@ public class Form : LongEntity
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         ArgumentException.ThrowIfNullOrWhiteSpace(slug);
 
-        var tenant = TenantScope.ForSubscriber(subscriberId, restaurantId);
+        var tenant = TenantScope.ForSubscriber(subscriberId);
 
         return new Form
         {
             SubscriberId = tenant.SubscriberId,
-            RestaurantId = tenant.RestaurantId,
             Name = name.Trim(),
             Description = description?.Trim(),
             Slug = slug.Trim().ToLowerInvariant(),
@@ -64,7 +54,7 @@ public class Form : LongEntity
     }
 
     public void EnsureAccessibleTo(TenantScope scope) =>
-        scope.EnsureCanAccess(SubscriberId, RestaurantId);
+        scope.EnsureCanAccess(SubscriberId);
 
     public void Update(string name, string? description, string? updatedBy = null)
     {
@@ -128,7 +118,6 @@ public class Form : LongEntity
         var newVersion = new Form
         {
             SubscriberId = SubscriberId,
-            RestaurantId = RestaurantId,
             Name = Name,
             Description = Description,
             Slug = Slug,

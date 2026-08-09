@@ -9,7 +9,6 @@ namespace Vendo.FormBuilder.Application.Forms.Commands.UpdateForm;
 public sealed record UpdateFormCommand(
     long FormId,
     int SubscriberId,
-    int? RestaurantId,
     string Name,
     string? Description,
     string RowVersion,
@@ -32,7 +31,6 @@ public sealed class UpdateFormCommandHandler : IRequestHandler<UpdateFormCommand
             _formRepository,
             request.FormId,
             request.SubscriberId,
-            request.RestaurantId,
             withDetails: true,
             cancellationToken);
 

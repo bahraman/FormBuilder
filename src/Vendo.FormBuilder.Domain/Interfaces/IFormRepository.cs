@@ -9,7 +9,6 @@ public interface IFormRepository
     Task<Form?> GetByIdWithDetailsAsync(long id, CancellationToken cancellationToken = default);
     Task<(IReadOnlyList<Form> Items, int TotalCount)> GetPagedAsync(
         int subscriberId,
-        int? restaurantId,
         int pageNumber,
         int pageSize,
         string? search = null,
@@ -17,13 +16,11 @@ public interface IFormRepository
         CancellationToken cancellationToken = default);
     Task<bool> SlugExistsAsync(
         int subscriberId,
-        int? restaurantId,
         string slug,
         long? excludeFormId = null,
         CancellationToken cancellationToken = default);
     Task<int> GetLatestVersionAsync(
         int subscriberId,
-        int? restaurantId,
         string slug,
         CancellationToken cancellationToken = default);
     Task AddAsync(Form form, CancellationToken cancellationToken = default);

@@ -10,7 +10,6 @@ namespace Vendo.FormBuilder.Application.Forms.Queries.GetForms;
 
 public sealed record GetFormsQuery(
     int SubscriberId,
-    int? RestaurantId = null,
     int PageNumber = 1,
     int PageSize = 20,
     string? Search = null,
@@ -27,7 +26,7 @@ public sealed class GetFormsQueryHandler : IRequestHandler<GetFormsQuery, PagedR
 
     public async Task<PagedResult<FormSummaryDto>> Handle(GetFormsQuery request, CancellationToken cancellationToken)
     {
-        var tenant = TenantScope.ForSubscriber(request.SubscriberId, request.RestaurantId);
+        var tenant = TenantScope.ForSubscriber(request.SubscriberId);
 
         var pagination = new PaginationQuery
         {
@@ -37,7 +36,6 @@ public sealed class GetFormsQueryHandler : IRequestHandler<GetFormsQuery, PagedR
 
         var (items, totalCount) = await _formRepository.GetPagedAsync(
             tenant.SubscriberId,
-            tenant.RestaurantId,
             pagination.PageNumber,
             pagination.PageSize,
             request.Search,

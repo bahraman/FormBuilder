@@ -11,7 +11,6 @@ namespace Vendo.FormBuilder.Application.Responses.Commands.SubmitFormResponse;
 public sealed record SubmitFormResponseCommand(
     long FormId,
     int SubscriberId,
-    int? RestaurantId,
     IReadOnlyList<FormResponseValueInputDto> Values,
     string? SubmittedBy = null,
     string? IpAddress = null,
@@ -39,7 +38,6 @@ public sealed class SubmitFormResponseCommandHandler : IRequestHandler<SubmitFor
             _formRepository,
             request.FormId,
             request.SubscriberId,
-            request.RestaurantId,
             withDetails: true,
             cancellationToken);
 

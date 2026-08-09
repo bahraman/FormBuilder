@@ -9,7 +9,6 @@ namespace Vendo.FormBuilder.Application.Forms.Commands.ReorderFormFields;
 public sealed record ReorderFormFieldsCommand(
     long FormId,
     int SubscriberId,
-    int? RestaurantId,
     IReadOnlyList<FieldOrderItemDto> FieldOrders,
     string? UpdatedBy = null) : IRequest<FormDetailDto>;
 
@@ -30,7 +29,6 @@ public sealed class ReorderFormFieldsCommandHandler : IRequestHandler<ReorderFor
             _formRepository,
             request.FormId,
             request.SubscriberId,
-            request.RestaurantId,
             withDetails: true,
             cancellationToken);
 

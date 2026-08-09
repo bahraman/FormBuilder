@@ -10,7 +10,6 @@ public sealed class AddFormFieldCommandValidator : AbstractValidator<AddFormFiel
     {
         RuleFor(x => x.FormId).NotEmpty();
         RuleFor(x => x.SubscriberId).RequiredSubscriberId();
-        RuleFor(x => x.RestaurantId).OptionalRestaurantId();
         RuleFor(x => x.Name).NotEmpty().MaximumLength(100)
             .Matches("^[a-zA-Z][a-zA-Z0-9_]*$")
             .WithMessage("Field name must start with a letter and contain only letters, numbers, and underscores.");

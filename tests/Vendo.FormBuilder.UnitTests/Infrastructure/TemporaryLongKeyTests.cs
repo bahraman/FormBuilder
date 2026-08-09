@@ -13,7 +13,7 @@ public sealed class TemporaryLongKeyTests
     public void PrepareForSave_marks_negative_form_id_as_temporary()
     {
         using var db = CreateContext();
-        var form = Form.Create(1, null, "Menu Survey", null, "menu-survey");
+        var form = Form.Create(1, "Menu Survey", null, "menu-survey");
         form.Id.Should().BeNegative();
 
         db.Forms.Add(form);
@@ -28,7 +28,7 @@ public sealed class TemporaryLongKeyTests
     {
         using var db = CreateContext();
 
-        var form = Form.Create(1, null, "Feedback", null, "feedback");
+        var form = Form.Create(1, "Feedback", null, "feedback");
         var field = form.AddField("rating", "Rating", FieldType.Dropdown, 0, isRequired: true);
         field.AddOption("Good", "good", 0, isDefault: true);
 

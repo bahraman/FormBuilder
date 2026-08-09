@@ -11,7 +11,6 @@ public sealed record UpdateFormFieldCommand(
     long FormId,
     long FieldId,
     int SubscriberId,
-    int? RestaurantId,
     string Label,
     bool IsRequired,
     string? Placeholder,
@@ -39,7 +38,6 @@ public sealed class UpdateFormFieldCommandHandler : IRequestHandler<UpdateFormFi
             _formRepository,
             request.FormId,
             request.SubscriberId,
-            request.RestaurantId,
             withDetails: true,
             cancellationToken);
 

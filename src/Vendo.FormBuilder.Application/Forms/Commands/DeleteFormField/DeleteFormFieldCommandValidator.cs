@@ -10,6 +10,5 @@ public sealed class DeleteFormFieldCommandValidator : AbstractValidator<DeleteFo
         RuleFor(x => x.FormId).NotEmpty();
         RuleFor(x => x.FieldId).NotEmpty();
         RuleFor(x => x.SubscriberId).RequiredSubscriberId();
-        RuleFor(x => x.RestaurantId).OptionalRestaurantId();
     }
 }

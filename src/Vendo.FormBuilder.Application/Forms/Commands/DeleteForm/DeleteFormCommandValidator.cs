@@ -9,6 +9,5 @@ public sealed class DeleteFormCommandValidator : AbstractValidator<DeleteFormCom
     {
         RuleFor(x => x.FormId).NotEmpty();
         RuleFor(x => x.SubscriberId).RequiredSubscriberId();
-        RuleFor(x => x.RestaurantId).OptionalRestaurantId();
     }
 }

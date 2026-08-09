@@ -9,6 +9,5 @@ public sealed class ArchiveFormCommandValidator : AbstractValidator<ArchiveFormC
     {
         RuleFor(x => x.FormId).NotEmpty();
         RuleFor(x => x.SubscriberId).RequiredSubscriberId();
-        RuleFor(x => x.RestaurantId).OptionalRestaurantId();
     }
 }

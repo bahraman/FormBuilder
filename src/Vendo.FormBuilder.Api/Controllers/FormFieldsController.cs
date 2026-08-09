@@ -39,7 +39,6 @@ public sealed class FormFieldsController : ControllerBase
         [FromHeader(Name = AdminFormHeaders.SubscriberId)] int subscriberId,
         [FromHeader(Name = AdminFormHeaders.SubscriberIds)] string? subscriberIds,
         [FromHeader(Name = AdminFormHeaders.RoleId)] int roleId,
-        [FromQuery] int? restaurantId = null,
         CancellationToken cancellationToken = default)
     {
         _ = userId;
@@ -52,7 +51,6 @@ public sealed class FormFieldsController : ControllerBase
             new AddFormFieldCommand(
                 formId,
                 subscriberId,
-                restaurantId,
                 request.Name,
                 request.Label,
                 request.FieldType,
@@ -69,7 +67,7 @@ public sealed class FormFieldsController : ControllerBase
         return CreatedAtAction(
             nameof(FormsController.GetFormById),
             "Forms",
-            new { formId, restaurantId },
+            new { formId },
             result);
     }
 
@@ -90,7 +88,6 @@ public sealed class FormFieldsController : ControllerBase
         [FromHeader(Name = AdminFormHeaders.SubscriberId)] int subscriberId,
         [FromHeader(Name = AdminFormHeaders.SubscriberIds)] string? subscriberIds,
         [FromHeader(Name = AdminFormHeaders.RoleId)] int roleId,
-        [FromQuery] int? restaurantId = null,
         CancellationToken cancellationToken = default)
     {
         _ = userId;
@@ -104,7 +101,6 @@ public sealed class FormFieldsController : ControllerBase
                 formId,
                 fieldId,
                 subscriberId,
-                restaurantId,
                 request.Label,
                 request.IsRequired,
                 request.Placeholder,
@@ -134,7 +130,6 @@ public sealed class FormFieldsController : ControllerBase
         [FromHeader(Name = AdminFormHeaders.SubscriberId)] int subscriberId,
         [FromHeader(Name = AdminFormHeaders.SubscriberIds)] string? subscriberIds,
         [FromHeader(Name = AdminFormHeaders.RoleId)] int roleId,
-        [FromQuery] int? restaurantId = null,
         [FromQuery] string? deletedBy = null,
         CancellationToken cancellationToken = default)
     {
@@ -145,7 +140,7 @@ public sealed class FormFieldsController : ControllerBase
         }
 
         await _sender.Send(
-            new DeleteFormFieldCommand(formId, fieldId, subscriberId, restaurantId, deletedBy),
+            new DeleteFormFieldCommand(formId, fieldId, subscriberId, deletedBy),
             cancellationToken);
         return NoContent();
     }
@@ -166,7 +161,6 @@ public sealed class FormFieldsController : ControllerBase
         [FromHeader(Name = AdminFormHeaders.SubscriberId)] int subscriberId,
         [FromHeader(Name = AdminFormHeaders.SubscriberIds)] string? subscriberIds,
         [FromHeader(Name = AdminFormHeaders.RoleId)] int roleId,
-        [FromQuery] int? restaurantId = null,
         CancellationToken cancellationToken = default)
     {
         _ = userId;
@@ -179,7 +173,6 @@ public sealed class FormFieldsController : ControllerBase
             new ReorderFormFieldsCommand(
                 formId,
                 subscriberId,
-                restaurantId,
                 request.FieldOrders,
                 request.UpdatedBy),
             cancellationToken);

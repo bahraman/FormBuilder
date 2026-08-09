@@ -9,6 +9,5 @@ public sealed class CreateFormVersionCommandValidator : AbstractValidator<Create
     {
         RuleFor(x => x.FormId).NotEmpty();
         RuleFor(x => x.SubscriberId).RequiredSubscriberId();
-        RuleFor(x => x.RestaurantId).OptionalRestaurantId();
     }
 }
