@@ -30,12 +30,17 @@ public sealed class FormsController : ControllerBase
     /// <summary>
     /// Get a paginated list of forms for a subscriber (optionally scoped to a restaurant).
     /// When restaurantId is provided, returns that restaurant's forms plus subscriber-level shared forms.
+    /// Identity from headers: x-user-id, x-role-id, x-subscriber-id, x-subscriber-ids.
     /// </summary>
     [HttpGet]
     [ProducesResponseType(typeof(PagedResult<FormSummaryDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<PagedResult<FormSummaryDto>>> GetForms(
-        [FromQuery] int subscriberId,
+        [FromHeader(Name = AdminFormHeaders.UserId)] int userId,
+        [FromHeader(Name = AdminFormHeaders.SubscriberId)] int subscriberId,
+        [FromHeader(Name = AdminFormHeaders.SubscriberIds)] string? subscriberIds,
+        [FromHeader(Name = AdminFormHeaders.RoleId)] int roleId,
         [FromQuery] int? restaurantId = null,
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 20,
@@ -43,6 +48,12 @@ public sealed class FormsController : ControllerBase
         [FromQuery] FormStatus? status = null,
         CancellationToken cancellationToken = default)
     {
+        _ = userId;
+        if (AdminFormHeaders.UnauthorizedIfNoAccess(this, roleId, subscriberId, subscriberIds) is { } unauthorized)
+        {
+            return unauthorized;
+        }
+
         var result = await _sender.Send(
             new GetFormsQuery(subscriberId, restaurantId, pageNumber, pageSize, search, status),
             cancellationToken);
@@ -51,17 +62,28 @@ public sealed class FormsController : ControllerBase
     }
 
     /// <summary>
-    /// Get a form by id. Requires subscriberId; optional restaurantId enforces restaurant isolation.
+    /// Get a form by id. Optional restaurantId enforces restaurant isolation.
+    /// Identity from headers: x-user-id, x-role-id, x-subscriber-id, x-subscriber-ids.
     /// </summary>
     [HttpGet("{formId:long}")]
     [ProducesResponseType(typeof(FormDetailDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<FormDetailDto>> GetFormById(
         long formId,
-        [FromQuery] int subscriberId,
+        [FromHeader(Name = AdminFormHeaders.UserId)] int userId,
+        [FromHeader(Name = AdminFormHeaders.SubscriberId)] int subscriberId,
+        [FromHeader(Name = AdminFormHeaders.SubscriberIds)] string? subscriberIds,
+        [FromHeader(Name = AdminFormHeaders.RoleId)] int roleId,
         [FromQuery] int? restaurantId = null,
         CancellationToken cancellationToken = default)
     {
+        _ = userId;
+        if (AdminFormHeaders.UnauthorizedIfNoAccess(this, roleId, subscriberId, subscriberIds) is { } unauthorized)
+        {
+            return unauthorized;
+        }
+
         var result = await _sender.Send(
             new GetFormByIdQuery(formId, subscriberId, restaurantId),
             cancellationToken);
@@ -70,7 +92,7 @@ public sealed class FormsController : ControllerBase
 
     /// <summary>
     /// Create a new draft form owned by a subscriber (optionally restaurant-specific).
-    /// Tenant/identity come from headers only (not query or body): x-user-id, x-role-id, x-subscriber-id, x-subscriber-ids.
+    /// Identity from headers: x-user-id, x-role-id, x-subscriber-id, x-subscriber-ids.
     /// </summary>
     [HttpPost]
     [ProducesResponseType(typeof(FormDetailDto), StatusCodes.Status201Created)]
@@ -79,16 +101,16 @@ public sealed class FormsController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<FormDetailDto>> CreateForm(
         [FromBody] CreateFormRequest request,
-        [FromHeader(Name = "x-user-id")] int userId,
-        [FromHeader(Name = "x-subscriber-id")] int subscriberId,
-        [FromHeader(Name = "x-subscriber-ids")] string? subscriberIds,
-        [FromHeader(Name = "x-role-id")] int roleId,
+        [FromHeader(Name = AdminFormHeaders.UserId)] int userId,
+        [FromHeader(Name = AdminFormHeaders.SubscriberId)] int subscriberId,
+        [FromHeader(Name = AdminFormHeaders.SubscriberIds)] string? subscriberIds,
+        [FromHeader(Name = AdminFormHeaders.RoleId)] int roleId,
         CancellationToken cancellationToken)
     {
         _ = userId;
-        if (!TokenAccess.HasAccess(roleId, subscriberId, subscriberIds))
+        if (AdminFormHeaders.UnauthorizedIfNoAccess(this, roleId, subscriberId, subscriberIds) is { } unauthorized)
         {
-            return Unauthorized("Invalid token");
+            return unauthorized;
         }
 
         var result = await _sender.Send(
@@ -103,13 +125,13 @@ public sealed class FormsController : ControllerBase
 
         return CreatedAtAction(
             nameof(GetFormById),
-            new { formId = result.Id, subscriberId = result.SubscriberId, restaurantId = result.RestaurantId },
+            new { formId = result.Id, restaurantId = result.RestaurantId },
             result);
     }
 
     /// <summary>
     /// Update a draft form's metadata. Requires RowVersion for optimistic concurrency.
-    /// Tenant/identity come from headers only (not query or body): x-user-id, x-role-id, x-subscriber-id, x-subscriber-ids.
+    /// Identity from headers: x-user-id, x-role-id, x-subscriber-id, x-subscriber-ids.
     /// </summary>
     [HttpPut("{formId:long}")]
     [ProducesResponseType(typeof(FormDetailDto), StatusCodes.Status200OK)]
@@ -119,17 +141,17 @@ public sealed class FormsController : ControllerBase
     public async Task<ActionResult<FormDetailDto>> UpdateForm(
         long formId,
         [FromBody] UpdateFormRequest request,
-        [FromHeader(Name = "x-user-id")] int userId,
-        [FromHeader(Name = "x-subscriber-id")] int subscriberId,
-        [FromHeader(Name = "x-subscriber-ids")] string? subscriberIds,
-        [FromHeader(Name = "x-role-id")] int roleId,
+        [FromHeader(Name = AdminFormHeaders.UserId)] int userId,
+        [FromHeader(Name = AdminFormHeaders.SubscriberId)] int subscriberId,
+        [FromHeader(Name = AdminFormHeaders.SubscriberIds)] string? subscriberIds,
+        [FromHeader(Name = AdminFormHeaders.RoleId)] int roleId,
         [FromQuery] int? restaurantId = null,
         CancellationToken cancellationToken = default)
     {
         _ = userId;
-        if (!TokenAccess.HasAccess(roleId, subscriberId, subscriberIds))
+        if (AdminFormHeaders.UnauthorizedIfNoAccess(this, roleId, subscriberId, subscriberIds) is { } unauthorized)
         {
-            return Unauthorized("Invalid token");
+            return unauthorized;
         }
 
         var result = await _sender.Send(
@@ -148,18 +170,29 @@ public sealed class FormsController : ControllerBase
 
     /// <summary>
     /// Publish a draft form so it can accept responses.
+    /// Identity from headers: x-user-id, x-role-id, x-subscriber-id, x-subscriber-ids.
     /// </summary>
     [HttpPost("{formId:long}/publish")]
     [ProducesResponseType(typeof(FormDetailDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<FormDetailDto>> PublishForm(
         long formId,
-        [FromQuery] int subscriberId,
         [FromBody] ActorRequest? request,
+        [FromHeader(Name = AdminFormHeaders.UserId)] int userId,
+        [FromHeader(Name = AdminFormHeaders.SubscriberId)] int subscriberId,
+        [FromHeader(Name = AdminFormHeaders.SubscriberIds)] string? subscriberIds,
+        [FromHeader(Name = AdminFormHeaders.RoleId)] int roleId,
         [FromQuery] int? restaurantId = null,
         CancellationToken cancellationToken = default)
     {
+        _ = userId;
+        if (AdminFormHeaders.UnauthorizedIfNoAccess(this, roleId, subscriberId, subscriberIds) is { } unauthorized)
+        {
+            return unauthorized;
+        }
+
         var result = await _sender.Send(
             new PublishFormCommand(formId, subscriberId, restaurantId, request?.Actor),
             cancellationToken);
@@ -169,18 +202,29 @@ public sealed class FormsController : ControllerBase
 
     /// <summary>
     /// Archive a published form.
+    /// Identity from headers: x-user-id, x-role-id, x-subscriber-id, x-subscriber-ids.
     /// </summary>
     [HttpPost("{formId:long}/archive")]
     [ProducesResponseType(typeof(FormDetailDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<FormDetailDto>> ArchiveForm(
         long formId,
-        [FromQuery] int subscriberId,
         [FromBody] ActorRequest? request,
+        [FromHeader(Name = AdminFormHeaders.UserId)] int userId,
+        [FromHeader(Name = AdminFormHeaders.SubscriberId)] int subscriberId,
+        [FromHeader(Name = AdminFormHeaders.SubscriberIds)] string? subscriberIds,
+        [FromHeader(Name = AdminFormHeaders.RoleId)] int roleId,
         [FromQuery] int? restaurantId = null,
         CancellationToken cancellationToken = default)
     {
+        _ = userId;
+        if (AdminFormHeaders.UnauthorizedIfNoAccess(this, roleId, subscriberId, subscriberIds) is { } unauthorized)
+        {
+            return unauthorized;
+        }
+
         var result = await _sender.Send(
             new ArchiveFormCommand(formId, subscriberId, restaurantId, request?.Actor),
             cancellationToken);
@@ -190,41 +234,63 @@ public sealed class FormsController : ControllerBase
 
     /// <summary>
     /// Create a new draft version from a published or archived form (same tenant ownership).
+    /// Identity from headers: x-user-id, x-role-id, x-subscriber-id, x-subscriber-ids.
     /// </summary>
     [HttpPost("{formId:long}/versions")]
     [ProducesResponseType(typeof(FormDetailDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<FormDetailDto>> CreateFormVersion(
         long formId,
-        [FromQuery] int subscriberId,
         [FromBody] ActorRequest? request,
+        [FromHeader(Name = AdminFormHeaders.UserId)] int userId,
+        [FromHeader(Name = AdminFormHeaders.SubscriberId)] int subscriberId,
+        [FromHeader(Name = AdminFormHeaders.SubscriberIds)] string? subscriberIds,
+        [FromHeader(Name = AdminFormHeaders.RoleId)] int roleId,
         [FromQuery] int? restaurantId = null,
         CancellationToken cancellationToken = default)
     {
+        _ = userId;
+        if (AdminFormHeaders.UnauthorizedIfNoAccess(this, roleId, subscriberId, subscriberIds) is { } unauthorized)
+        {
+            return unauthorized;
+        }
+
         var result = await _sender.Send(
             new CreateFormVersionCommand(formId, subscriberId, restaurantId, request?.Actor),
             cancellationToken);
 
         return CreatedAtAction(
             nameof(GetFormById),
-            new { formId = result.Id, subscriberId = result.SubscriberId, restaurantId = result.RestaurantId },
+            new { formId = result.Id, restaurantId = result.RestaurantId },
             result);
     }
 
     /// <summary>
     /// Soft-delete a form.
+    /// Identity from headers: x-user-id, x-role-id, x-subscriber-id, x-subscriber-ids.
     /// </summary>
     [HttpDelete("{formId:long}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteForm(
         long formId,
-        [FromQuery] int subscriberId,
+        [FromHeader(Name = AdminFormHeaders.UserId)] int userId,
+        [FromHeader(Name = AdminFormHeaders.SubscriberId)] int subscriberId,
+        [FromHeader(Name = AdminFormHeaders.SubscriberIds)] string? subscriberIds,
+        [FromHeader(Name = AdminFormHeaders.RoleId)] int roleId,
         [FromQuery] int? restaurantId = null,
         [FromQuery] string? deletedBy = null,
         CancellationToken cancellationToken = default)
     {
+        _ = userId;
+        if (AdminFormHeaders.UnauthorizedIfNoAccess(this, roleId, subscriberId, subscriberIds) is { } unauthorized)
+        {
+            return unauthorized;
+        }
+
         await _sender.Send(
             new DeleteFormCommand(formId, subscriberId, restaurantId, deletedBy),
             cancellationToken);

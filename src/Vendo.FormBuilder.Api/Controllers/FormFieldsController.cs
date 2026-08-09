@@ -1,3 +1,4 @@
+using Vendo.FormBuilder.Api.Security;
 using Vendo.FormBuilder.Application.Forms.Commands.AddFormField;
 using Vendo.FormBuilder.Application.Forms.Commands.DeleteFormField;
 using Vendo.FormBuilder.Application.Forms.Commands.ReorderFormFields;
@@ -23,19 +24,30 @@ public sealed class FormFieldsController : ControllerBase
 
     /// <summary>
     /// Add a field to a draft form.
+    /// Identity from headers: x-user-id, x-role-id, x-subscriber-id, x-subscriber-ids.
     /// </summary>
     [HttpPost]
     [ProducesResponseType(typeof(FormFieldDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<FormFieldDto>> AddField(
         long formId,
-        [FromQuery] int subscriberId,
         [FromBody] AddFormFieldRequest request,
+        [FromHeader(Name = AdminFormHeaders.UserId)] int userId,
+        [FromHeader(Name = AdminFormHeaders.SubscriberId)] int subscriberId,
+        [FromHeader(Name = AdminFormHeaders.SubscriberIds)] string? subscriberIds,
+        [FromHeader(Name = AdminFormHeaders.RoleId)] int roleId,
         [FromQuery] int? restaurantId = null,
         CancellationToken cancellationToken = default)
     {
+        _ = userId;
+        if (AdminFormHeaders.UnauthorizedIfNoAccess(this, roleId, subscriberId, subscriberIds) is { } unauthorized)
+        {
+            return unauthorized;
+        }
+
         var result = await _sender.Send(
             new AddFormFieldCommand(
                 formId,
@@ -57,25 +69,36 @@ public sealed class FormFieldsController : ControllerBase
         return CreatedAtAction(
             nameof(FormsController.GetFormById),
             "Forms",
-            new { formId, subscriberId, restaurantId },
+            new { formId, restaurantId },
             result);
     }
 
     /// <summary>
     /// Update a field on a draft form.
+    /// Identity from headers: x-user-id, x-role-id, x-subscriber-id, x-subscriber-ids.
     /// </summary>
     [HttpPut("{fieldId:long}")]
     [ProducesResponseType(typeof(FormFieldDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<FormFieldDto>> UpdateField(
         long formId,
         long fieldId,
-        [FromQuery] int subscriberId,
         [FromBody] UpdateFormFieldRequest request,
+        [FromHeader(Name = AdminFormHeaders.UserId)] int userId,
+        [FromHeader(Name = AdminFormHeaders.SubscriberId)] int subscriberId,
+        [FromHeader(Name = AdminFormHeaders.SubscriberIds)] string? subscriberIds,
+        [FromHeader(Name = AdminFormHeaders.RoleId)] int roleId,
         [FromQuery] int? restaurantId = null,
         CancellationToken cancellationToken = default)
     {
+        _ = userId;
+        if (AdminFormHeaders.UnauthorizedIfNoAccess(this, roleId, subscriberId, subscriberIds) is { } unauthorized)
+        {
+            return unauthorized;
+        }
+
         var result = await _sender.Send(
             new UpdateFormFieldCommand(
                 formId,
@@ -98,18 +121,29 @@ public sealed class FormFieldsController : ControllerBase
 
     /// <summary>
     /// Soft-delete a field from a draft form.
+    /// Identity from headers: x-user-id, x-role-id, x-subscriber-id, x-subscriber-ids.
     /// </summary>
     [HttpDelete("{fieldId:long}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteField(
         long formId,
         long fieldId,
-        [FromQuery] int subscriberId,
+        [FromHeader(Name = AdminFormHeaders.UserId)] int userId,
+        [FromHeader(Name = AdminFormHeaders.SubscriberId)] int subscriberId,
+        [FromHeader(Name = AdminFormHeaders.SubscriberIds)] string? subscriberIds,
+        [FromHeader(Name = AdminFormHeaders.RoleId)] int roleId,
         [FromQuery] int? restaurantId = null,
         [FromQuery] string? deletedBy = null,
         CancellationToken cancellationToken = default)
     {
+        _ = userId;
+        if (AdminFormHeaders.UnauthorizedIfNoAccess(this, roleId, subscriberId, subscriberIds) is { } unauthorized)
+        {
+            return unauthorized;
+        }
+
         await _sender.Send(
             new DeleteFormFieldCommand(formId, fieldId, subscriberId, restaurantId, deletedBy),
             cancellationToken);
@@ -118,18 +152,29 @@ public sealed class FormFieldsController : ControllerBase
 
     /// <summary>
     /// Reorder fields on a draft form.
+    /// Identity from headers: x-user-id, x-role-id, x-subscriber-id, x-subscriber-ids.
     /// </summary>
     [HttpPut("reorder")]
     [ProducesResponseType(typeof(FormDetailDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<FormDetailDto>> ReorderFields(
         long formId,
-        [FromQuery] int subscriberId,
         [FromBody] ReorderFormFieldsRequest request,
+        [FromHeader(Name = AdminFormHeaders.UserId)] int userId,
+        [FromHeader(Name = AdminFormHeaders.SubscriberId)] int subscriberId,
+        [FromHeader(Name = AdminFormHeaders.SubscriberIds)] string? subscriberIds,
+        [FromHeader(Name = AdminFormHeaders.RoleId)] int roleId,
         [FromQuery] int? restaurantId = null,
         CancellationToken cancellationToken = default)
     {
+        _ = userId;
+        if (AdminFormHeaders.UnauthorizedIfNoAccess(this, roleId, subscriberId, subscriberIds) is { } unauthorized)
+        {
+            return unauthorized;
+        }
+
         var result = await _sender.Send(
             new ReorderFormFieldsCommand(
                 formId,
