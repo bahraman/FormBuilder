@@ -7,38 +7,39 @@ namespace Vendo.FormBuilder.UnitTests.Domain;
 public sealed class TenantScopeTests
 {
     private const int SubscriberA = 1;
-    private const int Restaurant1 = 10;
-    private const int Restaurant2 = 20;
+    private const int SubscriberB = 2;
 
     [Fact]
-    public void CanAccess_SharedForm_FromRestaurantScope_ShouldBeTrue()
+    public void CanAccess_SameSubscriber_ShouldBeTrue()
     {
-        var scope = TenantScope.ForSubscriber(SubscriberA, Restaurant1);
+        var scope = TenantScope.ForSubscriber(SubscriberA);
 
-        scope.CanAccess(SubscriberA, null).Should().BeTrue();
+        scope.CanAccess(SubscriberA).Should().BeTrue();
     }
 
     [Fact]
-    public void CanAccess_OtherRestaurantForm_ShouldBeFalse()
+    public void CanAccess_OtherSubscriber_ShouldBeFalse()
     {
-        var scope = TenantScope.ForSubscriber(SubscriberA, Restaurant1);
+        var scope = TenantScope.ForSubscriber(SubscriberA);
 
-        scope.CanAccess(SubscriberA, Restaurant2).Should().BeFalse();
+        scope.CanAccess(SubscriberB).Should().BeFalse();
     }
 
     [Fact]
-    public void ForSubscriber_WithZeroRestaurant_ShouldTreatAsSubscriberLevel()
+    public void ForSubscriber_WithNonPositive_ShouldThrow()
     {
-        var scope = TenantScope.ForSubscriber(SubscriberA, 0);
+        var act = () => TenantScope.ForSubscriber(0);
 
-        scope.RestaurantId.Should().BeNull();
+        act.Should().Throw<DomainException>().WithMessage("*SubscriberId*");
     }
 
     [Fact]
-    public void ForSubscriber_WithNegativeRestaurant_ShouldThrow()
+    public void EnsureCanAccess_OtherSubscriber_ShouldThrowNotFound()
     {
-        var act = () => TenantScope.ForSubscriber(SubscriberA, -1);
+        var scope = TenantScope.ForSubscriber(SubscriberA);
 
-        act.Should().Throw<DomainException>();
+        var act = () => scope.EnsureCanAccess(SubscriberB);
+
+        act.Should().Throw<NotFoundException>();
     }
 }

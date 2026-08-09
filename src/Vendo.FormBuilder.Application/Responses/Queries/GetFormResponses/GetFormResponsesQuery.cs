@@ -10,7 +10,6 @@ namespace Vendo.FormBuilder.Application.Responses.Queries.GetFormResponses;
 public sealed record GetFormResponsesQuery(
     long FormId,
     int SubscriberId,
-    int? RestaurantId = null,
     int PageNumber = 1,
     int PageSize = 20) : IRequest<PagedResult<FormResponseDto>>;
 
@@ -36,7 +35,6 @@ public sealed class GetFormResponsesQueryHandler : IRequestHandler<GetFormRespon
             _formRepository,
             request.FormId,
             request.SubscriberId,
-            request.RestaurantId,
             withDetails: false,
             cancellationToken);
 

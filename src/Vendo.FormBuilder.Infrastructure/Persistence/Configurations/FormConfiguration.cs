@@ -19,8 +19,6 @@ public sealed class FormConfiguration : IEntityTypeConfiguration<Form>
         builder.Property(x => x.SubscriberId)
             .IsRequired();
 
-        builder.Property(x => x.RestaurantId);
-
         builder.Property(x => x.Name)
             .HasMaxLength(200)
             .IsRequired();
@@ -43,13 +41,12 @@ public sealed class FormConfiguration : IEntityTypeConfiguration<Form>
         builder.Property(x => x.RowVersion)
             .IsRowVersion();
 
-        // Slug uniqueness is scoped per tenant ownership (subscriber + restaurant).
-        builder.HasIndex(x => new { x.SubscriberId, x.RestaurantId, x.Slug, x.Version })
+        // Slug uniqueness is scoped per subscriber.
+        builder.HasIndex(x => new { x.SubscriberId, x.Slug, x.Version })
             .IsUnique()
             .HasFilter("[IsDeleted] = 0");
 
         builder.HasIndex(x => x.SubscriberId);
-        builder.HasIndex(x => new { x.SubscriberId, x.RestaurantId });
         builder.HasIndex(x => x.Status);
         builder.HasIndex(x => x.Name);
 

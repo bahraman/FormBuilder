@@ -6,7 +6,6 @@ public class FormSummaryDto
 {
     public required long Id { get; init; }
     public required int SubscriberId { get; init; }
-    public int? RestaurantId { get; init; }
     public required string Name { get; init; }
     public string? Description { get; init; }
     public required string Slug { get; init; }

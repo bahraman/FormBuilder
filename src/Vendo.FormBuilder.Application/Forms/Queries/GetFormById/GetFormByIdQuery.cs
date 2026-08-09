@@ -7,8 +7,7 @@ namespace Vendo.FormBuilder.Application.Forms.Queries.GetFormById;
 
 public sealed record GetFormByIdQuery(
     long FormId,
-    int SubscriberId,
-    int? RestaurantId = null) : IRequest<FormDetailDto>;
+    int SubscriberId) : IRequest<FormDetailDto>;
 
 public sealed class GetFormByIdQueryHandler : IRequestHandler<GetFormByIdQuery, FormDetailDto>
 {
@@ -25,7 +24,6 @@ public sealed class GetFormByIdQueryHandler : IRequestHandler<GetFormByIdQuery, 
             _formRepository,
             request.FormId,
             request.SubscriberId,
-            request.RestaurantId,
             withDetails: true,
             cancellationToken);
 

@@ -10,7 +10,6 @@ namespace Vendo.FormBuilder.Application.Forms.Commands.CreateFormVersion;
 public sealed record CreateFormVersionCommand(
     long FormId,
     int SubscriberId,
-    int? RestaurantId = null,
     string? CreatedBy = null) : IRequest<FormDetailDto>;
 
 public sealed class CreateFormVersionCommandHandler : IRequestHandler<CreateFormVersionCommand, FormDetailDto>
@@ -30,13 +29,11 @@ public sealed class CreateFormVersionCommandHandler : IRequestHandler<CreateForm
             _formRepository,
             request.FormId,
             request.SubscriberId,
-            request.RestaurantId,
             withDetails: true,
             cancellationToken);
 
         var latestVersion = await _formRepository.GetLatestVersionAsync(
             form.SubscriberId,
-            form.RestaurantId,
             form.Slug,
             cancellationToken);
 

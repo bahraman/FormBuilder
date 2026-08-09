@@ -9,8 +9,6 @@ public sealed class CreateFormCommandValidator : AbstractValidator<CreateFormCom
     {
         RuleFor(x => x.SubscriberId).RequiredSubscriberId();
 
-        RuleFor(x => x.RestaurantId).OptionalRestaurantId();
-
         RuleFor(x => x.Name)
             .NotEmpty()
             .MaximumLength(200);

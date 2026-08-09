@@ -10,7 +10,6 @@ namespace Vendo.FormBuilder.Application.Forms.Commands.CreateForm;
 
 public sealed record CreateFormCommand(
     int SubscriberId,
-    int? RestaurantId,
     string Name,
     string? Description,
     string Slug,
@@ -29,22 +28,20 @@ public sealed class CreateFormCommandHandler : IRequestHandler<CreateFormCommand
 
     public async Task<FormDetailDto> Handle(CreateFormCommand request, CancellationToken cancellationToken)
     {
-        var tenant = TenantScope.ForSubscriber(request.SubscriberId, request.RestaurantId);
+        var tenant = TenantScope.ForSubscriber(request.SubscriberId);
         var slug = request.Slug.Trim().ToLowerInvariant();
 
         if (await _formRepository.SlugExistsAsync(
                 tenant.SubscriberId,
-                tenant.RestaurantId,
                 slug,
                 cancellationToken: cancellationToken))
         {
             throw new ConflictException(
-                $"A form with slug '{slug}' already exists for this subscriber/restaurant scope.");
+                $"A form with slug '{slug}' already exists for this subscriber.");
         }
 
         var form = Form.Create(
             tenant.SubscriberId,
-            tenant.RestaurantId,
             request.Name,
             request.Description,
             slug,

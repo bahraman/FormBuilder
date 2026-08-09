@@ -34,14 +34,12 @@ public sealed class FormResponsesController : ControllerBase
         long formId,
         [FromQuery] int subscriberId,
         [FromBody] SubmitFormResponseRequest request,
-        [FromQuery] int? restaurantId = null,
         CancellationToken cancellationToken = default)
     {
         var result = await _sender.Send(
             new SubmitFormResponseCommand(
                 formId,
                 subscriberId,
-                restaurantId,
                 request.Values,
                 request.SubmittedBy,
                 HttpContext.Connection.RemoteIpAddress?.ToString(),
@@ -50,7 +48,7 @@ public sealed class FormResponsesController : ControllerBase
 
         return CreatedAtAction(
             nameof(GetResponseById),
-            new { responseId = result.Id, subscriberId, restaurantId },
+            new { responseId = result.Id, subscriberId },
             result);
     }
 
@@ -63,13 +61,12 @@ public sealed class FormResponsesController : ControllerBase
     public async Task<ActionResult<PagedResult<FormResponseDto>>> GetResponses(
         long formId,
         [FromQuery] int subscriberId,
-        [FromQuery] int? restaurantId = null,
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 20,
         CancellationToken cancellationToken = default)
     {
         var result = await _sender.Send(
-            new GetFormResponsesQuery(formId, subscriberId, restaurantId, pageNumber, pageSize),
+            new GetFormResponsesQuery(formId, subscriberId, pageNumber, pageSize),
             cancellationToken);
 
         return Ok(result);
@@ -84,11 +81,10 @@ public sealed class FormResponsesController : ControllerBase
     public async Task<ActionResult<FormResponseDto>> GetResponseById(
         Guid responseId,
         [FromQuery] int subscriberId,
-        [FromQuery] int? restaurantId = null,
         CancellationToken cancellationToken = default)
     {
         var result = await _sender.Send(
-            new GetFormResponseByIdQuery(responseId, subscriberId, restaurantId),
+            new GetFormResponseByIdQuery(responseId, subscriberId),
             cancellationToken);
         return Ok(result);
     }
@@ -104,14 +100,12 @@ public sealed class FormResponsesController : ControllerBase
         Guid responseId,
         [FromQuery] int subscriberId,
         [FromBody] UpdateFormResponseRequest request,
-        [FromQuery] int? restaurantId = null,
         CancellationToken cancellationToken = default)
     {
         var result = await _sender.Send(
             new UpdateFormResponseCommand(
                 responseId,
                 subscriberId,
-                restaurantId,
                 request.Values,
                 request.UpdatedBy),
             cancellationToken);
@@ -128,12 +122,11 @@ public sealed class FormResponsesController : ControllerBase
     public async Task<IActionResult> DeleteResponse(
         Guid responseId,
         [FromQuery] int subscriberId,
-        [FromQuery] int? restaurantId = null,
         [FromQuery] string? deletedBy = null,
         CancellationToken cancellationToken = default)
     {
         await _sender.Send(
-            new DeleteFormResponseCommand(responseId, subscriberId, restaurantId, deletedBy),
+            new DeleteFormResponseCommand(responseId, subscriberId, deletedBy),
             cancellationToken);
 
         return NoContent();

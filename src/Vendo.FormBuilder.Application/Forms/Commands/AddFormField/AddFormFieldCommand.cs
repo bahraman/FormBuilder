@@ -10,7 +10,6 @@ namespace Vendo.FormBuilder.Application.Forms.Commands.AddFormField;
 public sealed record AddFormFieldCommand(
     long FormId,
     int SubscriberId,
-    int? RestaurantId,
     string Name,
     string Label,
     FieldType FieldType,
@@ -40,7 +39,6 @@ public sealed class AddFormFieldCommandHandler : IRequestHandler<AddFormFieldCom
             _formRepository,
             request.FormId,
             request.SubscriberId,
-            request.RestaurantId,
             withDetails: true,
             cancellationToken);
 

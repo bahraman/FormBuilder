@@ -9,7 +9,6 @@ public sealed class UpdateFormCommandValidator : AbstractValidator<UpdateFormCom
     {
         RuleFor(x => x.FormId).NotEmpty();
         RuleFor(x => x.SubscriberId).RequiredSubscriberId();
-        RuleFor(x => x.RestaurantId).OptionalRestaurantId();
         RuleFor(x => x.Name).NotEmpty().MaximumLength(200);
         RuleFor(x => x.Description).MaximumLength(2000);
         RuleFor(x => x.RowVersion).NotEmpty();

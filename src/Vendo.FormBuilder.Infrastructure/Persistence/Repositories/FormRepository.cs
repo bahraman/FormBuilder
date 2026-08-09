@@ -33,17 +33,16 @@ public sealed class FormRepository : IFormRepository
 
     public async Task<(IReadOnlyList<Form> Items, int TotalCount)> GetPagedAsync(
         int subscriberId,
-        int? restaurantId,
         int pageNumber,
         int pageSize,
         string? search = null,
         FormStatus? status = null,
         CancellationToken cancellationToken = default)
     {
-        var query = ApplyTenantFilter(
-                _dbContext.Forms.AsNoTracking().Include(f => f.Fields),
-                subscriberId,
-                restaurantId);
+        var query = _dbContext.Forms
+            .AsNoTracking()
+            .Include(f => f.Fields)
+            .Where(f => f.SubscriberId == subscriberId);
 
         if (!string.IsNullOrWhiteSpace(search))
         {
@@ -72,7 +71,6 @@ public sealed class FormRepository : IFormRepository
 
     public Task<bool> SlugExistsAsync(
         int subscriberId,
-        int? restaurantId,
         string slug,
         long? excludeFormId = null,
         CancellationToken cancellationToken = default)
@@ -80,7 +78,6 @@ public sealed class FormRepository : IFormRepository
         var query = _dbContext.Forms.AsNoTracking()
             .Where(f =>
                 f.SubscriberId == subscriberId &&
-                f.RestaurantId == restaurantId &&
                 f.Slug == slug);
 
         if (excludeFormId.HasValue)
@@ -93,7 +90,6 @@ public sealed class FormRepository : IFormRepository
 
     public async Task<int> GetLatestVersionAsync(
         int subscriberId,
-        int? restaurantId,
         string slug,
         CancellationToken cancellationToken = default)
     {
@@ -101,7 +97,6 @@ public sealed class FormRepository : IFormRepository
             .AsNoTracking()
             .Where(f =>
                 f.SubscriberId == subscriberId &&
-                f.RestaurantId == restaurantId &&
                 f.Slug == slug)
             .Select(f => (int?)f.Version)
             .MaxAsync(cancellationToken) ?? 0;
@@ -137,25 +132,5 @@ public sealed class FormRepository : IFormRepository
     public void AddField(FormField field)
     {
         _dbContext.FormFields.Add(field);
-    }
-
-    /// <summary>
-    /// Subscriber is always required.
-    /// When restaurantId is provided: restaurant-specific forms for that restaurant + subscriber-level (null) forms.
-    /// When restaurantId is null: all forms for the subscriber.
-    /// </summary>
-    private static IQueryable<Form> ApplyTenantFilter(
-        IQueryable<Form> query,
-        int subscriberId,
-        int? restaurantId)
-    {
-        query = query.Where(f => f.SubscriberId == subscriberId);
-
-        if (restaurantId.HasValue)
-        {
-            query = query.Where(f => f.RestaurantId == null || f.RestaurantId == restaurantId);
-        }
-
-        return query;
     }
 }

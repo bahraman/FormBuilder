@@ -28,8 +28,7 @@ public sealed class FormsController : ControllerBase
     }
 
     /// <summary>
-    /// Get a paginated list of forms for a subscriber (optionally scoped to a restaurant).
-    /// When restaurantId is provided, returns that restaurant's forms plus subscriber-level shared forms.
+    /// Get a paginated list of forms for a subscriber.
     /// Identity from headers: x-user-id, x-role-id, x-subscriber-id, x-subscriber-ids.
     /// </summary>
     [HttpGet]
@@ -41,7 +40,6 @@ public sealed class FormsController : ControllerBase
         [FromHeader(Name = AdminFormHeaders.SubscriberId)] int subscriberId,
         [FromHeader(Name = AdminFormHeaders.SubscriberIds)] string? subscriberIds,
         [FromHeader(Name = AdminFormHeaders.RoleId)] int roleId,
-        [FromQuery] int? restaurantId = null,
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 20,
         [FromQuery] string? search = null,
@@ -55,14 +53,14 @@ public sealed class FormsController : ControllerBase
         }
 
         var result = await _sender.Send(
-            new GetFormsQuery(subscriberId, restaurantId, pageNumber, pageSize, search, status),
+            new GetFormsQuery(subscriberId, pageNumber, pageSize, search, status),
             cancellationToken);
 
         return Ok(result);
     }
 
     /// <summary>
-    /// Get a form by id. Optional restaurantId enforces restaurant isolation.
+    /// Get a form by id for the subscriber in the gateway headers.
     /// Identity from headers: x-user-id, x-role-id, x-subscriber-id, x-subscriber-ids.
     /// </summary>
     [HttpGet("{formId:long}")]
@@ -75,7 +73,6 @@ public sealed class FormsController : ControllerBase
         [FromHeader(Name = AdminFormHeaders.SubscriberId)] int subscriberId,
         [FromHeader(Name = AdminFormHeaders.SubscriberIds)] string? subscriberIds,
         [FromHeader(Name = AdminFormHeaders.RoleId)] int roleId,
-        [FromQuery] int? restaurantId = null,
         CancellationToken cancellationToken = default)
     {
         _ = userId;
@@ -85,13 +82,13 @@ public sealed class FormsController : ControllerBase
         }
 
         var result = await _sender.Send(
-            new GetFormByIdQuery(formId, subscriberId, restaurantId),
+            new GetFormByIdQuery(formId, subscriberId),
             cancellationToken);
         return Ok(result);
     }
 
     /// <summary>
-    /// Create a new draft form owned by a subscriber (optionally restaurant-specific).
+    /// Create a new draft form owned by a subscriber.
     /// Identity from headers: x-user-id, x-role-id, x-subscriber-id, x-subscriber-ids.
     /// </summary>
     [HttpPost]
@@ -116,7 +113,6 @@ public sealed class FormsController : ControllerBase
         var result = await _sender.Send(
             new CreateFormCommand(
                 subscriberId,
-                request.RestaurantId,
                 request.Name,
                 request.Description,
                 request.Slug,
@@ -125,7 +121,7 @@ public sealed class FormsController : ControllerBase
 
         return CreatedAtAction(
             nameof(GetFormById),
-            new { formId = result.Id, restaurantId = result.RestaurantId },
+            new { formId = result.Id },
             result);
     }
 
@@ -145,7 +141,6 @@ public sealed class FormsController : ControllerBase
         [FromHeader(Name = AdminFormHeaders.SubscriberId)] int subscriberId,
         [FromHeader(Name = AdminFormHeaders.SubscriberIds)] string? subscriberIds,
         [FromHeader(Name = AdminFormHeaders.RoleId)] int roleId,
-        [FromQuery] int? restaurantId = null,
         CancellationToken cancellationToken = default)
     {
         _ = userId;
@@ -158,7 +153,6 @@ public sealed class FormsController : ControllerBase
             new UpdateFormCommand(
                 formId,
                 subscriberId,
-                restaurantId,
                 request.Name,
                 request.Description,
                 request.RowVersion,
@@ -184,7 +178,6 @@ public sealed class FormsController : ControllerBase
         [FromHeader(Name = AdminFormHeaders.SubscriberId)] int subscriberId,
         [FromHeader(Name = AdminFormHeaders.SubscriberIds)] string? subscriberIds,
         [FromHeader(Name = AdminFormHeaders.RoleId)] int roleId,
-        [FromQuery] int? restaurantId = null,
         CancellationToken cancellationToken = default)
     {
         _ = userId;
@@ -194,7 +187,7 @@ public sealed class FormsController : ControllerBase
         }
 
         var result = await _sender.Send(
-            new PublishFormCommand(formId, subscriberId, restaurantId, request?.Actor),
+            new PublishFormCommand(formId, subscriberId, request?.Actor),
             cancellationToken);
 
         return Ok(result);
@@ -216,7 +209,6 @@ public sealed class FormsController : ControllerBase
         [FromHeader(Name = AdminFormHeaders.SubscriberId)] int subscriberId,
         [FromHeader(Name = AdminFormHeaders.SubscriberIds)] string? subscriberIds,
         [FromHeader(Name = AdminFormHeaders.RoleId)] int roleId,
-        [FromQuery] int? restaurantId = null,
         CancellationToken cancellationToken = default)
     {
         _ = userId;
@@ -226,7 +218,7 @@ public sealed class FormsController : ControllerBase
         }
 
         var result = await _sender.Send(
-            new ArchiveFormCommand(formId, subscriberId, restaurantId, request?.Actor),
+            new ArchiveFormCommand(formId, subscriberId, request?.Actor),
             cancellationToken);
 
         return Ok(result);
@@ -248,7 +240,6 @@ public sealed class FormsController : ControllerBase
         [FromHeader(Name = AdminFormHeaders.SubscriberId)] int subscriberId,
         [FromHeader(Name = AdminFormHeaders.SubscriberIds)] string? subscriberIds,
         [FromHeader(Name = AdminFormHeaders.RoleId)] int roleId,
-        [FromQuery] int? restaurantId = null,
         CancellationToken cancellationToken = default)
     {
         _ = userId;
@@ -258,12 +249,12 @@ public sealed class FormsController : ControllerBase
         }
 
         var result = await _sender.Send(
-            new CreateFormVersionCommand(formId, subscriberId, restaurantId, request?.Actor),
+            new CreateFormVersionCommand(formId, subscriberId, request?.Actor),
             cancellationToken);
 
         return CreatedAtAction(
             nameof(GetFormById),
-            new { formId = result.Id, restaurantId = result.RestaurantId },
+            new { formId = result.Id },
             result);
     }
 
@@ -281,7 +272,6 @@ public sealed class FormsController : ControllerBase
         [FromHeader(Name = AdminFormHeaders.SubscriberId)] int subscriberId,
         [FromHeader(Name = AdminFormHeaders.SubscriberIds)] string? subscriberIds,
         [FromHeader(Name = AdminFormHeaders.RoleId)] int roleId,
-        [FromQuery] int? restaurantId = null,
         [FromQuery] string? deletedBy = null,
         CancellationToken cancellationToken = default)
     {
@@ -292,7 +282,7 @@ public sealed class FormsController : ControllerBase
         }
 
         await _sender.Send(
-            new DeleteFormCommand(formId, subscriberId, restaurantId, deletedBy),
+            new DeleteFormCommand(formId, subscriberId, deletedBy),
             cancellationToken);
         return NoContent();
     }
@@ -302,7 +292,6 @@ public sealed record CreateFormRequest(
     string Name,
     string? Description,
     string Slug,
-    int? RestaurantId = null,
     string? CreatedBy = null);
 
 public sealed record UpdateFormRequest(string Name, string? Description, string RowVersion, string? UpdatedBy = null);

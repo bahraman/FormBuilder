@@ -11,7 +11,7 @@ public sealed class CreateFormCommandValidatorTests
     [Fact]
     public void Validate_WithValidCommand_ShouldPass()
     {
-        var command = new CreateFormCommand(SubscriberId, null, "Contact Form", "Desc", "contact-form");
+        var command = new CreateFormCommand(SubscriberId, "Contact Form", "Desc", "contact-form");
 
         var result = _validator.Validate(command);
 
@@ -21,22 +21,12 @@ public sealed class CreateFormCommandValidatorTests
     [Fact]
     public void Validate_WithoutSubscriberId_ShouldFail()
     {
-        var command = new CreateFormCommand(0, null, "Name", null, "slug");
+        var command = new CreateFormCommand(0, "Name", null, "slug");
 
         var result = _validator.Validate(command);
 
         result.IsValid.Should().BeFalse();
         result.Errors.Should().Contain(e => e.PropertyName == nameof(CreateFormCommand.SubscriberId));
-    }
-
-    [Fact]
-    public void Validate_WithRestaurantIdZero_ShouldPass_AsSubscriberLevel()
-    {
-        var command = new CreateFormCommand(SubscriberId, 0, "فرم استخدام", "استخدام", "s");
-
-        var result = _validator.Validate(command);
-
-        result.IsValid.Should().BeTrue();
     }
 
     [Theory]
@@ -45,7 +35,7 @@ public sealed class CreateFormCommandValidatorTests
     [InlineData("slug_with_underscore")]
     public void Validate_WithInvalidSlug_ShouldFail(string slug)
     {
-        var command = new CreateFormCommand(SubscriberId, null, "Name", null, slug);
+        var command = new CreateFormCommand(SubscriberId, "Name", null, slug);
 
         var result = _validator.Validate(command);
 

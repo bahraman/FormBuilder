@@ -9,7 +9,6 @@ namespace Vendo.FormBuilder.Application.Forms.Commands.PublishForm;
 public sealed record PublishFormCommand(
     long FormId,
     int SubscriberId,
-    int? RestaurantId = null,
     string? UpdatedBy = null) : IRequest<FormDetailDto>;
 
 public sealed class PublishFormCommandHandler : IRequestHandler<PublishFormCommand, FormDetailDto>
@@ -29,7 +28,6 @@ public sealed class PublishFormCommandHandler : IRequestHandler<PublishFormComma
             _formRepository,
             request.FormId,
             request.SubscriberId,
-            request.RestaurantId,
             withDetails: true,
             cancellationToken);
 

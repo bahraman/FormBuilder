@@ -11,11 +11,10 @@ internal static class FormAccess
         IFormRepository formRepository,
         long formId,
         int subscriberId,
-        int? restaurantId,
         bool withDetails,
         CancellationToken cancellationToken)
     {
-        var scope = TenantScope.ForSubscriber(subscriberId, restaurantId);
+        var scope = TenantScope.ForSubscriber(subscriberId);
 
         var form = withDetails
             ? await formRepository.GetByIdWithDetailsAsync(formId, cancellationToken)

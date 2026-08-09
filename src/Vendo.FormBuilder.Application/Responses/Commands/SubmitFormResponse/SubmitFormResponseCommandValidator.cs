@@ -9,7 +9,6 @@ public sealed class SubmitFormResponseCommandValidator : AbstractValidator<Submi
     {
         RuleFor(x => x.FormId).NotEmpty();
         RuleFor(x => x.SubscriberId).RequiredSubscriberId();
-        RuleFor(x => x.RestaurantId).OptionalRestaurantId();
         RuleFor(x => x.Values).NotNull();
         RuleForEach(x => x.Values).ChildRules(value =>
         {

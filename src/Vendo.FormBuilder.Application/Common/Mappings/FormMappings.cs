@@ -10,7 +10,6 @@ public static class FormMappings
     {
         Id = form.Id,
         SubscriberId = form.SubscriberId,
-        RestaurantId = form.RestaurantId,
         Name = form.Name,
         Description = form.Description,
         Slug = form.Slug,
@@ -29,7 +28,6 @@ public static class FormMappings
     {
         Id = form.Id,
         SubscriberId = form.SubscriberId,
-        RestaurantId = form.RestaurantId,
         Name = form.Name,
         Description = form.Description,
         Slug = form.Slug,

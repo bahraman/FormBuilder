@@ -1,6 +1,5 @@
 @host = http://localhost:8080
 @subscriberId = 1
-@restaurantId = 10
 @formId = 1
 @fieldId = 1
 @responseId = 00000000-0000-0000-0000-000000000000
@@ -17,21 +16,14 @@ GET {{host}}/api/provinces
 ### List cities of a province (lookup for City fields)
 GET {{host}}/api/provinces/{{provinceId}}/cities
 
-### List forms for subscriber (all restaurants + shared)
+### List forms for subscriber
 GET {{host}}/api/forms?pageNumber=1&pageSize=20
 x-user-id: {{userId}}
 x-role-id: {{roleId}}
 x-subscriber-id: {{subscriberId}}
 x-subscriber-ids: [{{subscriberId}}]
 
-### List forms visible to a restaurant (restaurant-specific + shared)
-GET {{host}}/api/forms?restaurantId={{restaurantId}}&pageNumber=1&pageSize=20
-x-user-id: {{userId}}
-x-role-id: {{roleId}}
-x-subscriber-id: {{subscriberId}}
-x-subscriber-ids: [{{subscriberId}}]
-
-### Create subscriber-level form (RestaurantId null = shared)
+### Create form
 POST {{host}}/api/forms
 Content-Type: application/json
 x-user-id: {{userId}}
@@ -43,22 +35,6 @@ x-subscriber-ids: [{{subscriberId}}]
   "name": "Contact Us",
   "description": "Shared across restaurants",
   "slug": "contact-us",
-  "createdBy": "admin"
-}
-
-### Create restaurant-specific form
-POST {{host}}/api/forms
-Content-Type: application/json
-x-user-id: {{userId}}
-x-role-id: {{roleId}}
-x-subscriber-id: {{subscriberId}}
-x-subscriber-ids: [{{subscriberId}}]
-
-{
-  "restaurantId": {{restaurantId}},
-  "name": "Local Feedback",
-  "description": "Only for one restaurant",
-  "slug": "local-feedback",
   "createdBy": "admin"
 }
 
@@ -102,8 +78,8 @@ x-subscriber-ids: [{{subscriberId}}]
   "actor": "admin"
 }
 
-### Submit response (data entry — still uses query subscriberId)
-POST {{host}}/api/forms/{{formId}}/responses?subscriberId={{subscriberId}}&restaurantId={{restaurantId}}
+### Submit response (data entry — query subscriberId)
+POST {{host}}/api/forms/{{formId}}/responses?subscriberId={{subscriberId}}
 Content-Type: application/json
 
 {

@@ -9,7 +9,6 @@ public sealed class ReorderFormFieldsCommandValidator : AbstractValidator<Reorde
     {
         RuleFor(x => x.FormId).NotEmpty();
         RuleFor(x => x.SubscriberId).RequiredSubscriberId();
-        RuleFor(x => x.RestaurantId).OptionalRestaurantId();
         RuleFor(x => x.FieldOrders).NotEmpty();
         RuleForEach(x => x.FieldOrders).ChildRules(item =>
         {

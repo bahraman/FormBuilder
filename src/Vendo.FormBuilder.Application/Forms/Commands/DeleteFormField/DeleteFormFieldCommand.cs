@@ -9,7 +9,6 @@ public sealed record DeleteFormFieldCommand(
     long FormId,
     long FieldId,
     int SubscriberId,
-    int? RestaurantId = null,
     string? DeletedBy = null) : IRequest;
 
 public sealed class DeleteFormFieldCommandHandler : IRequestHandler<DeleteFormFieldCommand>
@@ -29,7 +28,6 @@ public sealed class DeleteFormFieldCommandHandler : IRequestHandler<DeleteFormFi
             _formRepository,
             request.FormId,
             request.SubscriberId,
-            request.RestaurantId,
             withDetails: true,
             cancellationToken);
 

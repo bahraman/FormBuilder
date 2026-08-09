@@ -36,7 +36,7 @@ Api → Application → Domain
 - Unlimited fields per form with reorder support
 - Validation rules and selectable options
 - Submit and retrieve form responses
-- Multi-tenant ownership (`SubscriberId` required, `RestaurantId` optional)
+- Multi-tenant ownership (`SubscriberId` required; filter by subscriber only)
 - Pagination & filtering
 - Optimistic concurrency (`RowVersion`)
 - Soft delete + global query filters
@@ -45,24 +45,21 @@ Api → Application → Domain
 
 ## Multi-Tenant Form Ownership
 
-Every form is owned by a subscriber and optionally a restaurant:
+Every form is owned by a subscriber:
 
 | Field | Required | Behavior |
 |-------|----------|----------|
 | `SubscriberId` | Yes | Form always belongs to one subscriber. Cross-subscriber access is denied. |
-| `RestaurantId` | No | `null` or `0` = subscriber-level (shared across that subscriber's restaurants). Positive int = restaurant-specific and isolated from other restaurants. |
 
 Access rules:
 
 - A subscriber cannot access forms belonging to another subscriber.
-- When `restaurantId` is supplied on read/write APIs, results include that restaurant's forms **plus** subscriber-level shared forms (`RestaurantId = null`).
-- Restaurant-specific forms are not visible to other restaurants of the same subscriber.
-- Omitting `restaurantId` is a subscriber-wide scope (can manage all forms for that subscriber).
+- All list/get/mutate APIs filter by `subscriberId` only.
 
 Tenant scope is passed as:
 
-- **Admin form-builder APIs** (`/api/forms`, `/api/forms/{id}/fields`): `x-subscriber-id` header; optional `restaurantId` remains query/body
-- **Data-entry APIs** (`/api/forms/{id}/responses`, `/api/responses/...`): required query param `subscriberId`, optional `restaurantId`
+- **Admin form-builder APIs** (`/api/forms`, `/api/forms/{id}/fields`): `x-subscriber-id` header
+- **Data-entry APIs** (`/api/forms/{id}/responses`, `/api/responses/...`): required query param `subscriberId`
 
 ### Admin form-builder token headers
 
@@ -164,18 +161,18 @@ Kestrel and Docker are unaffected.
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `GET` | `/api/forms?subscriberId=` | List forms (page, search, status, optional `restaurantId`) |
-| `GET` | `/api/forms/{id}?subscriberId=` | Get form with fields |
-| `POST` | `/api/forms` | Create draft form (`subscriberId` required in body) |
-| `PUT` | `/api/forms/{id}?subscriberId=` | Update draft form |
-| `POST` | `/api/forms/{id}/publish?subscriberId=` | Publish form |
-| `POST` | `/api/forms/{id}/archive?subscriberId=` | Archive form |
-| `POST` | `/api/forms/{id}/versions?subscriberId=` | Create next draft version |
-| `DELETE` | `/api/forms/{id}?subscriberId=` | Soft-delete form |
-| `POST` | `/api/forms/{id}/fields?subscriberId=` | Add field |
-| `PUT` | `/api/forms/{id}/fields/{fieldId}?subscriberId=` | Update field |
-| `DELETE` | `/api/forms/{id}/fields/{fieldId}?subscriberId=` | Soft-delete field |
-| `PUT` | `/api/forms/{id}/fields/reorder?subscriberId=` | Reorder fields |
+| `GET` | `/api/forms` | List forms (headers + page/search/status query) |
+| `GET` | `/api/forms/{id}` | Get form with fields |
+| `POST` | `/api/forms` | Create draft form |
+| `PUT` | `/api/forms/{id}` | Update draft form |
+| `POST` | `/api/forms/{id}/publish` | Publish form |
+| `POST` | `/api/forms/{id}/archive` | Archive form |
+| `POST` | `/api/forms/{id}/versions` | Create next draft version |
+| `DELETE` | `/api/forms/{id}` | Soft-delete form |
+| `POST` | `/api/forms/{id}/fields` | Add field |
+| `PUT` | `/api/forms/{id}/fields/{fieldId}` | Update field |
+| `DELETE` | `/api/forms/{id}/fields/{fieldId}` | Soft-delete field |
+| `PUT` | `/api/forms/{id}/fields/reorder` | Reorder fields |
 | `POST` | `/api/forms/{id}/responses?subscriberId=` | Submit response |
 | `GET` | `/api/forms/{id}/responses?subscriberId=` | List responses |
 | `GET` | `/api/responses/{id}?subscriberId=` | Get response by id |
@@ -188,17 +185,22 @@ Kestrel and Docker are unaffected.
 ### Example: Create form → add field → publish → submit
 
 ```bash
-# 1. Create subscriber-level form (shared across restaurants)
+# 1. Create form (admin headers)
 curl -X POST http://localhost:8080/api/forms \
   -H "Content-Type: application/json" \
-  -d '{"subscriberId":1,"name":"Contact Us","description":"Website contact","slug":"contact-us","createdBy":"admin"}'
+  -H "x-user-id: 1" \
+  -H "x-role-id: 1013" \
+  -H "x-subscriber-id: 1" \
+  -H "x-subscriber-ids: [1]" \
+  -d '{"name":"Contact Us","description":"Website contact","slug":"contact-us","createdBy":"admin"}'
 
-# Restaurant-specific form (optional restaurantId):
-# -d '{"subscriberId":1,"restaurantId":10,"name":"Local Survey","slug":"local-survey"}'
-
-# 2. Add field (replace FORM_ID and SUBSCRIBER_ID)
-curl -X POST "http://localhost:8080/api/forms/FORM_ID/fields?subscriberId=SUBSCRIBER_ID" \
+# 2. Add field (replace FORM_ID)
+curl -X POST "http://localhost:8080/api/forms/FORM_ID/fields" \
   -H "Content-Type: application/json" \
+  -H "x-user-id: 1" \
+  -H "x-role-id: 1013" \
+  -H "x-subscriber-id: 1" \
+  -H "x-subscriber-ids: [1]" \
   -d '{
     "name":"email",
     "label":"Email",
@@ -209,12 +211,16 @@ curl -X POST "http://localhost:8080/api/forms/FORM_ID/fields?subscriberId=SUBSCR
   }'
 
 # 3. Publish
-curl -X POST "http://localhost:8080/api/forms/FORM_ID/publish?subscriberId=SUBSCRIBER_ID" \
+curl -X POST "http://localhost:8080/api/forms/FORM_ID/publish" \
   -H "Content-Type: application/json" \
+  -H "x-user-id: 1" \
+  -H "x-role-id: 1013" \
+  -H "x-subscriber-id: 1" \
+  -H "x-subscriber-ids: [1]" \
   -d '{"actor":"admin"}'
 
-# 4. Submit response (replace FIELD_ID)
-curl -X POST "http://localhost:8080/api/forms/FORM_ID/responses?subscriberId=SUBSCRIBER_ID" \
+# 4. Submit response (data entry still uses query subscriberId)
+curl -X POST "http://localhost:8080/api/forms/FORM_ID/responses?subscriberId=1" \
   -H "Content-Type: application/json" \
   -d '{
     "submittedBy":"user@example.com",
@@ -224,12 +230,12 @@ curl -X POST "http://localhost:8080/api/forms/FORM_ID/responses?subscriberId=SUB
 
 ## Design Notes
 
-- **Multi-tenant ownership**: `SubscriberId` is required; `RestaurantId` is optional (`null` = shared at subscriber level).
+- **Multi-tenant ownership**: `SubscriberId` is required; forms are filtered by subscriber only.
 - **Draft-only edits**: Published/archived forms are immutable; create a new version to change structure.
 - **Optimistic concurrency**: Send `rowVersion` (Base64) on update endpoints.
 - **Soft delete**: Entities are marked deleted and excluded via EF global query filters.
 - **Response validation**: Required rules, type checks, option membership, min/max, and regex are enforced at submission time.
-- **Slug uniqueness**: Scoped per `(SubscriberId, RestaurantId, Slug, Version)`.
+- **Slug uniqueness**: Scoped per `(SubscriberId, Slug, Version)`.
 
 ## Solution Structure
 
