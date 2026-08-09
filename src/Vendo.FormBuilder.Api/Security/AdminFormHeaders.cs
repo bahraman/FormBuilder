@@ -3,13 +3,13 @@ using Microsoft.AspNetCore.Mvc;
 namespace Vendo.FormBuilder.Api.Security;
 
 /// <summary>
-/// Shared header binding names for admin form-builder APIs.
+/// Shared gateway header names for admin form-builder APIs.
+/// Target subscriberId comes from the route (or request model), not headers.
 /// </summary>
 public static class AdminFormHeaders
 {
     public const string UserId = "x-user-id";
     public const string RoleId = "x-role-id";
-    public const string SubscriberId = "x-subscriber-id";
     public const string SubscriberIds = "x-subscriber-ids";
 
     public static UnauthorizedObjectResult? UnauthorizedIfNoAccess(

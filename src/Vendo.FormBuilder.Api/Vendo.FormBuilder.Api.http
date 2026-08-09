@@ -17,40 +17,36 @@ GET {{host}}/api/provinces
 GET {{host}}/api/provinces/{{provinceId}}/cities
 
 ### List forms for subscriber
-GET {{host}}/api/forms?pageNumber=1&pageSize=20
+GET {{host}}/api/{{subscriberId}}/forms?pageNumber=1&pageSize=20
 x-user-id: {{userId}}
 x-role-id: {{roleId}}
-x-subscriber-id: {{subscriberId}}
 x-subscriber-ids: [{{subscriberId}}]
 
 ### Create form
-POST {{host}}/api/forms
+POST {{host}}/api/{{subscriberId}}/forms
 Content-Type: application/json
 x-user-id: {{userId}}
 x-role-id: {{roleId}}
-x-subscriber-id: {{subscriberId}}
 x-subscriber-ids: [{{subscriberId}}]
 
 {
   "name": "Contact Us",
-  "description": "Shared across restaurants",
+  "description": "Contact form",
   "slug": "contact-us",
   "createdBy": "admin"
 }
 
 ### Get form
-GET {{host}}/api/forms/{{formId}}
+GET {{host}}/api/{{subscriberId}}/forms/{{formId}}
 x-user-id: {{userId}}
 x-role-id: {{roleId}}
-x-subscriber-id: {{subscriberId}}
 x-subscriber-ids: [{{subscriberId}}]
 
 ### Add text field
-POST {{host}}/api/forms/{{formId}}/fields
+POST {{host}}/api/{{subscriberId}}/forms/{{formId}}/fields
 Content-Type: application/json
 x-user-id: {{userId}}
 x-role-id: {{roleId}}
-x-subscriber-id: {{subscriberId}}
 x-subscriber-ids: [{{subscriberId}}]
 
 {
@@ -67,11 +63,10 @@ x-subscriber-ids: [{{subscriberId}}]
 }
 
 ### Publish form
-POST {{host}}/api/forms/{{formId}}/publish
+POST {{host}}/api/{{subscriberId}}/forms/{{formId}}/publish
 Content-Type: application/json
 x-user-id: {{userId}}
 x-role-id: {{roleId}}
-x-subscriber-id: {{subscriberId}}
 x-subscriber-ids: [{{subscriberId}}]
 
 {
@@ -96,11 +91,10 @@ GET {{host}}/api/forms/{{formId}}/responses?subscriberId={{subscriberId}}&pageNu
 GET {{host}}/api/responses/{{responseId}}?subscriberId={{subscriberId}}
 
 ### Create new version
-POST {{host}}/api/forms/{{formId}}/versions
+POST {{host}}/api/{{subscriberId}}/forms/{{formId}}/versions
 Content-Type: application/json
 x-user-id: {{userId}}
 x-role-id: {{roleId}}
-x-subscriber-id: {{subscriberId}}
 x-subscriber-ids: [{{subscriberId}}]
 
 {
