@@ -70,7 +70,7 @@ public sealed class FormsController : ControllerBase
 
     /// <summary>
     /// Create a new draft form owned by a subscriber (optionally restaurant-specific).
-    /// Requires gateway headers: x-user-id, x-role-id, x-subscriber-ids.
+    /// Tenant/identity come from headers only (not query or body): x-user-id, x-role-id, x-subscriber-id, x-subscriber-ids.
     /// </summary>
     [HttpPost]
     [ProducesResponseType(typeof(FormDetailDto), StatusCodes.Status201Created)]
@@ -80,19 +80,20 @@ public sealed class FormsController : ControllerBase
     public async Task<ActionResult<FormDetailDto>> CreateForm(
         [FromBody] CreateFormRequest request,
         [FromHeader(Name = "x-user-id")] int userId,
+        [FromHeader(Name = "x-subscriber-id")] int subscriberId,
         [FromHeader(Name = "x-subscriber-ids")] string? subscriberIds,
         [FromHeader(Name = "x-role-id")] int roleId,
         CancellationToken cancellationToken)
     {
         _ = userId;
-        if (!TokenAccess.HasAccess(roleId, request.SubscriberId, subscriberIds))
+        if (!TokenAccess.HasAccess(roleId, subscriberId, subscriberIds))
         {
             return Unauthorized("Invalid token");
         }
 
         var result = await _sender.Send(
             new CreateFormCommand(
-                request.SubscriberId,
+                subscriberId,
                 request.RestaurantId,
                 request.Name,
                 request.Description,
@@ -108,7 +109,7 @@ public sealed class FormsController : ControllerBase
 
     /// <summary>
     /// Update a draft form's metadata. Requires RowVersion for optimistic concurrency.
-    /// Requires gateway headers: x-user-id, x-role-id, x-subscriber-ids.
+    /// Tenant/identity come from headers only (not query or body): x-user-id, x-role-id, x-subscriber-id, x-subscriber-ids.
     /// </summary>
     [HttpPut("{formId:long}")]
     [ProducesResponseType(typeof(FormDetailDto), StatusCodes.Status200OK)]
@@ -117,9 +118,9 @@ public sealed class FormsController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<FormDetailDto>> UpdateForm(
         long formId,
-        [FromQuery] int subscriberId,
         [FromBody] UpdateFormRequest request,
         [FromHeader(Name = "x-user-id")] int userId,
+        [FromHeader(Name = "x-subscriber-id")] int subscriberId,
         [FromHeader(Name = "x-subscriber-ids")] string? subscriberIds,
         [FromHeader(Name = "x-role-id")] int roleId,
         [FromQuery] int? restaurantId = null,
@@ -232,7 +233,6 @@ public sealed class FormsController : ControllerBase
 }
 
 public sealed record CreateFormRequest(
-    int SubscriberId,
     string Name,
     string? Description,
     string Slug,
