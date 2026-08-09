@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Vendo.FormBuilder.Api.Controllers;
 
 [ApiController]
-[Route("api/forms/{formId:long}/fields")]
+[Route("api/{subscriberId:int}/forms/{formId:long}/fields")]
 [Produces("application/json")]
 public sealed class FormFieldsController : ControllerBase
 {
@@ -24,7 +24,7 @@ public sealed class FormFieldsController : ControllerBase
 
     /// <summary>
     /// Add a field to a draft form.
-    /// Identity from headers: x-user-id, x-role-id, x-subscriber-id, x-subscriber-ids.
+    /// subscriberId from route. Identity headers: x-user-id, x-role-id, x-subscriber-ids.
     /// </summary>
     [HttpPost]
     [ProducesResponseType(typeof(FormFieldDto), StatusCodes.Status201Created)]
@@ -33,10 +33,10 @@ public sealed class FormFieldsController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<FormFieldDto>> AddField(
+        [FromRoute] int subscriberId,
         long formId,
         [FromBody] AddFormFieldRequest request,
         [FromHeader(Name = AdminFormHeaders.UserId)] int userId,
-        [FromHeader(Name = AdminFormHeaders.SubscriberId)] int subscriberId,
         [FromHeader(Name = AdminFormHeaders.SubscriberIds)] string? subscriberIds,
         [FromHeader(Name = AdminFormHeaders.RoleId)] int roleId,
         CancellationToken cancellationToken = default)
@@ -67,13 +67,13 @@ public sealed class FormFieldsController : ControllerBase
         return CreatedAtAction(
             nameof(FormsController.GetFormById),
             "Forms",
-            new { formId },
+            new { subscriberId, formId },
             result);
     }
 
     /// <summary>
     /// Update a field on a draft form.
-    /// Identity from headers: x-user-id, x-role-id, x-subscriber-id, x-subscriber-ids.
+    /// subscriberId from route. Identity headers: x-user-id, x-role-id, x-subscriber-ids.
     /// </summary>
     [HttpPut("{fieldId:long}")]
     [ProducesResponseType(typeof(FormFieldDto), StatusCodes.Status200OK)]
@@ -81,11 +81,11 @@ public sealed class FormFieldsController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<FormFieldDto>> UpdateField(
+        [FromRoute] int subscriberId,
         long formId,
         long fieldId,
         [FromBody] UpdateFormFieldRequest request,
         [FromHeader(Name = AdminFormHeaders.UserId)] int userId,
-        [FromHeader(Name = AdminFormHeaders.SubscriberId)] int subscriberId,
         [FromHeader(Name = AdminFormHeaders.SubscriberIds)] string? subscriberIds,
         [FromHeader(Name = AdminFormHeaders.RoleId)] int roleId,
         CancellationToken cancellationToken = default)
@@ -117,17 +117,17 @@ public sealed class FormFieldsController : ControllerBase
 
     /// <summary>
     /// Soft-delete a field from a draft form.
-    /// Identity from headers: x-user-id, x-role-id, x-subscriber-id, x-subscriber-ids.
+    /// subscriberId from route. Identity headers: x-user-id, x-role-id, x-subscriber-ids.
     /// </summary>
     [HttpDelete("{fieldId:long}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteField(
+        [FromRoute] int subscriberId,
         long formId,
         long fieldId,
         [FromHeader(Name = AdminFormHeaders.UserId)] int userId,
-        [FromHeader(Name = AdminFormHeaders.SubscriberId)] int subscriberId,
         [FromHeader(Name = AdminFormHeaders.SubscriberIds)] string? subscriberIds,
         [FromHeader(Name = AdminFormHeaders.RoleId)] int roleId,
         [FromQuery] string? deletedBy = null,
@@ -147,7 +147,7 @@ public sealed class FormFieldsController : ControllerBase
 
     /// <summary>
     /// Reorder fields on a draft form.
-    /// Identity from headers: x-user-id, x-role-id, x-subscriber-id, x-subscriber-ids.
+    /// subscriberId from route. Identity headers: x-user-id, x-role-id, x-subscriber-ids.
     /// </summary>
     [HttpPut("reorder")]
     [ProducesResponseType(typeof(FormDetailDto), StatusCodes.Status200OK)]
@@ -155,10 +155,10 @@ public sealed class FormFieldsController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<FormDetailDto>> ReorderFields(
+        [FromRoute] int subscriberId,
         long formId,
         [FromBody] ReorderFormFieldsRequest request,
         [FromHeader(Name = AdminFormHeaders.UserId)] int userId,
-        [FromHeader(Name = AdminFormHeaders.SubscriberId)] int subscriberId,
         [FromHeader(Name = AdminFormHeaders.SubscriberIds)] string? subscriberIds,
         [FromHeader(Name = AdminFormHeaders.RoleId)] int roleId,
         CancellationToken cancellationToken = default)

@@ -16,7 +16,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Vendo.FormBuilder.Api.Controllers;
 
 [ApiController]
-[Route("api/forms")]
+[Route("api/{subscriberId:int}/forms")]
 [Produces("application/json")]
 public sealed class FormsController : ControllerBase
 {
@@ -29,15 +29,15 @@ public sealed class FormsController : ControllerBase
 
     /// <summary>
     /// Get a paginated list of forms for a subscriber.
-    /// Identity from headers: x-user-id, x-role-id, x-subscriber-id, x-subscriber-ids.
+    /// subscriberId from route. Identity headers: x-user-id, x-role-id, x-subscriber-ids.
     /// </summary>
     [HttpGet]
     [ProducesResponseType(typeof(PagedResult<FormSummaryDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<PagedResult<FormSummaryDto>>> GetForms(
+        [FromRoute] int subscriberId,
         [FromHeader(Name = AdminFormHeaders.UserId)] int userId,
-        [FromHeader(Name = AdminFormHeaders.SubscriberId)] int subscriberId,
         [FromHeader(Name = AdminFormHeaders.SubscriberIds)] string? subscriberIds,
         [FromHeader(Name = AdminFormHeaders.RoleId)] int roleId,
         [FromQuery] int pageNumber = 1,
@@ -60,17 +60,17 @@ public sealed class FormsController : ControllerBase
     }
 
     /// <summary>
-    /// Get a form by id for the subscriber in the gateway headers.
-    /// Identity from headers: x-user-id, x-role-id, x-subscriber-id, x-subscriber-ids.
+    /// Get a form by id for the subscriber in the route.
+    /// subscriberId from route. Identity headers: x-user-id, x-role-id, x-subscriber-ids.
     /// </summary>
     [HttpGet("{formId:long}")]
     [ProducesResponseType(typeof(FormDetailDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<FormDetailDto>> GetFormById(
+        [FromRoute] int subscriberId,
         long formId,
         [FromHeader(Name = AdminFormHeaders.UserId)] int userId,
-        [FromHeader(Name = AdminFormHeaders.SubscriberId)] int subscriberId,
         [FromHeader(Name = AdminFormHeaders.SubscriberIds)] string? subscriberIds,
         [FromHeader(Name = AdminFormHeaders.RoleId)] int roleId,
         CancellationToken cancellationToken = default)
@@ -88,8 +88,8 @@ public sealed class FormsController : ControllerBase
     }
 
     /// <summary>
-    /// Create a new draft form owned by a subscriber.
-    /// Identity from headers: x-user-id, x-role-id, x-subscriber-id, x-subscriber-ids.
+    /// Create a new draft form owned by the subscriber in the route.
+    /// subscriberId from route. Identity headers: x-user-id, x-role-id, x-subscriber-ids.
     /// </summary>
     [HttpPost]
     [ProducesResponseType(typeof(FormDetailDto), StatusCodes.Status201Created)]
@@ -97,9 +97,9 @@ public sealed class FormsController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<FormDetailDto>> CreateForm(
+        [FromRoute] int subscriberId,
         [FromBody] CreateFormRequest request,
         [FromHeader(Name = AdminFormHeaders.UserId)] int userId,
-        [FromHeader(Name = AdminFormHeaders.SubscriberId)] int subscriberId,
         [FromHeader(Name = AdminFormHeaders.SubscriberIds)] string? subscriberIds,
         [FromHeader(Name = AdminFormHeaders.RoleId)] int roleId,
         CancellationToken cancellationToken)
@@ -121,13 +121,13 @@ public sealed class FormsController : ControllerBase
 
         return CreatedAtAction(
             nameof(GetFormById),
-            new { formId = result.Id },
+            new { subscriberId = result.SubscriberId, formId = result.Id },
             result);
     }
 
     /// <summary>
     /// Update a draft form's metadata. Requires RowVersion for optimistic concurrency.
-    /// Identity from headers: x-user-id, x-role-id, x-subscriber-id, x-subscriber-ids.
+    /// subscriberId from route. Identity headers: x-user-id, x-role-id, x-subscriber-ids.
     /// </summary>
     [HttpPut("{formId:long}")]
     [ProducesResponseType(typeof(FormDetailDto), StatusCodes.Status200OK)]
@@ -135,10 +135,10 @@ public sealed class FormsController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<FormDetailDto>> UpdateForm(
+        [FromRoute] int subscriberId,
         long formId,
         [FromBody] UpdateFormRequest request,
         [FromHeader(Name = AdminFormHeaders.UserId)] int userId,
-        [FromHeader(Name = AdminFormHeaders.SubscriberId)] int subscriberId,
         [FromHeader(Name = AdminFormHeaders.SubscriberIds)] string? subscriberIds,
         [FromHeader(Name = AdminFormHeaders.RoleId)] int roleId,
         CancellationToken cancellationToken = default)
@@ -164,7 +164,7 @@ public sealed class FormsController : ControllerBase
 
     /// <summary>
     /// Publish a draft form so it can accept responses.
-    /// Identity from headers: x-user-id, x-role-id, x-subscriber-id, x-subscriber-ids.
+    /// subscriberId from route. Identity headers: x-user-id, x-role-id, x-subscriber-ids.
     /// </summary>
     [HttpPost("{formId:long}/publish")]
     [ProducesResponseType(typeof(FormDetailDto), StatusCodes.Status200OK)]
@@ -172,10 +172,10 @@ public sealed class FormsController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<FormDetailDto>> PublishForm(
+        [FromRoute] int subscriberId,
         long formId,
         [FromBody] ActorRequest? request,
         [FromHeader(Name = AdminFormHeaders.UserId)] int userId,
-        [FromHeader(Name = AdminFormHeaders.SubscriberId)] int subscriberId,
         [FromHeader(Name = AdminFormHeaders.SubscriberIds)] string? subscriberIds,
         [FromHeader(Name = AdminFormHeaders.RoleId)] int roleId,
         CancellationToken cancellationToken = default)
@@ -195,7 +195,7 @@ public sealed class FormsController : ControllerBase
 
     /// <summary>
     /// Archive a published form.
-    /// Identity from headers: x-user-id, x-role-id, x-subscriber-id, x-subscriber-ids.
+    /// subscriberId from route. Identity headers: x-user-id, x-role-id, x-subscriber-ids.
     /// </summary>
     [HttpPost("{formId:long}/archive")]
     [ProducesResponseType(typeof(FormDetailDto), StatusCodes.Status200OK)]
@@ -203,10 +203,10 @@ public sealed class FormsController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<FormDetailDto>> ArchiveForm(
+        [FromRoute] int subscriberId,
         long formId,
         [FromBody] ActorRequest? request,
         [FromHeader(Name = AdminFormHeaders.UserId)] int userId,
-        [FromHeader(Name = AdminFormHeaders.SubscriberId)] int subscriberId,
         [FromHeader(Name = AdminFormHeaders.SubscriberIds)] string? subscriberIds,
         [FromHeader(Name = AdminFormHeaders.RoleId)] int roleId,
         CancellationToken cancellationToken = default)
@@ -226,7 +226,7 @@ public sealed class FormsController : ControllerBase
 
     /// <summary>
     /// Create a new draft version from a published or archived form (same tenant ownership).
-    /// Identity from headers: x-user-id, x-role-id, x-subscriber-id, x-subscriber-ids.
+    /// subscriberId from route. Identity headers: x-user-id, x-role-id, x-subscriber-ids.
     /// </summary>
     [HttpPost("{formId:long}/versions")]
     [ProducesResponseType(typeof(FormDetailDto), StatusCodes.Status201Created)]
@@ -234,10 +234,10 @@ public sealed class FormsController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<FormDetailDto>> CreateFormVersion(
+        [FromRoute] int subscriberId,
         long formId,
         [FromBody] ActorRequest? request,
         [FromHeader(Name = AdminFormHeaders.UserId)] int userId,
-        [FromHeader(Name = AdminFormHeaders.SubscriberId)] int subscriberId,
         [FromHeader(Name = AdminFormHeaders.SubscriberIds)] string? subscriberIds,
         [FromHeader(Name = AdminFormHeaders.RoleId)] int roleId,
         CancellationToken cancellationToken = default)
@@ -254,22 +254,22 @@ public sealed class FormsController : ControllerBase
 
         return CreatedAtAction(
             nameof(GetFormById),
-            new { formId = result.Id },
+            new { subscriberId = result.SubscriberId, formId = result.Id },
             result);
     }
 
     /// <summary>
     /// Soft-delete a form.
-    /// Identity from headers: x-user-id, x-role-id, x-subscriber-id, x-subscriber-ids.
+    /// subscriberId from route. Identity headers: x-user-id, x-role-id, x-subscriber-ids.
     /// </summary>
     [HttpDelete("{formId:long}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteForm(
+        [FromRoute] int subscriberId,
         long formId,
         [FromHeader(Name = AdminFormHeaders.UserId)] int userId,
-        [FromHeader(Name = AdminFormHeaders.SubscriberId)] int subscriberId,
         [FromHeader(Name = AdminFormHeaders.SubscriberIds)] string? subscriberIds,
         [FromHeader(Name = AdminFormHeaders.RoleId)] int roleId,
         [FromQuery] string? deletedBy = null,

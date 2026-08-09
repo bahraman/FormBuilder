@@ -58,23 +58,23 @@ Access rules:
 
 Tenant scope is passed as:
 
-- **Admin form-builder APIs** (`/api/forms`, `/api/forms/{id}/fields`): `x-subscriber-id` header
+- **Admin form-builder APIs**: route `subscriberId` — `/api/{subscriberId}/forms/...`
 - **Data-entry APIs** (`/api/forms/{id}/responses`, `/api/responses/...`): required query param `subscriberId`
 
 ### Admin form-builder token headers
 
-All admin form-builder endpoints take tenant/identity **only from headers** (not query):
+Admin form-builder endpoints take identity from headers and target subscriber from the route:
 
-| Header | Purpose |
-|--------|---------|
-| `x-user-id` | Calling user id |
-| `x-role-id` | Role id; `1013` is treated as admin and bypasses subscriber membership |
-| `x-subscriber-id` | Target subscriber |
-| `x-subscriber-ids` | JSON array of subscriber ids the caller may access, e.g. `[1,2,3]` |
+| Source | Name | Purpose |
+|--------|------|---------|
+| Header | `x-user-id` | Calling user id |
+| Header | `x-role-id` | Role id; `1013` is treated as admin and bypasses subscriber membership |
+| Header | `x-subscriber-ids` | JSON array of subscriber ids the caller may access, e.g. `[1,2,3]` |
+| Route | `{subscriberId}` | Target subscriber for the operation |
 
 Applies to list/get/create/update/publish/archive/version/delete forms and all field APIs.
 
-Access is granted when the caller is admin (`x-role-id = 1013`) **or** `x-subscriber-id` is present in `x-subscriber-ids`. Otherwise the API returns `401 Unauthorized` with `"Invalid token"`.
+Access is granted when the caller is admin (`x-role-id = 1013`) **or** the route `subscriberId` is present in `x-subscriber-ids`. Otherwise the API returns `401 Unauthorized` with `"Invalid token"`.
 
 Data-entry endpoints (`/api/forms/{formId}/responses`, `/api/responses/...`) do **not** use these headers.
 
@@ -161,18 +161,18 @@ Kestrel and Docker are unaffected.
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `GET` | `/api/forms` | List forms (headers + page/search/status query) |
-| `GET` | `/api/forms/{id}` | Get form with fields |
-| `POST` | `/api/forms` | Create draft form |
-| `PUT` | `/api/forms/{id}` | Update draft form |
-| `POST` | `/api/forms/{id}/publish` | Publish form |
-| `POST` | `/api/forms/{id}/archive` | Archive form |
-| `POST` | `/api/forms/{id}/versions` | Create next draft version |
-| `DELETE` | `/api/forms/{id}` | Soft-delete form |
-| `POST` | `/api/forms/{id}/fields` | Add field |
-| `PUT` | `/api/forms/{id}/fields/{fieldId}` | Update field |
-| `DELETE` | `/api/forms/{id}/fields/{fieldId}` | Soft-delete field |
-| `PUT` | `/api/forms/{id}/fields/reorder` | Reorder fields |
+| `GET` | `/api/{subscriberId}/forms` | List forms (page/search/status query) |
+| `GET` | `/api/{subscriberId}/forms/{id}` | Get form with fields |
+| `POST` | `/api/{subscriberId}/forms` | Create draft form |
+| `PUT` | `/api/{subscriberId}/forms/{id}` | Update draft form |
+| `POST` | `/api/{subscriberId}/forms/{id}/publish` | Publish form |
+| `POST` | `/api/{subscriberId}/forms/{id}/archive` | Archive form |
+| `POST` | `/api/{subscriberId}/forms/{id}/versions` | Create next draft version |
+| `DELETE` | `/api/{subscriberId}/forms/{id}` | Soft-delete form |
+| `POST` | `/api/{subscriberId}/forms/{id}/fields` | Add field |
+| `PUT` | `/api/{subscriberId}/forms/{id}/fields/{fieldId}` | Update field |
+| `DELETE` | `/api/{subscriberId}/forms/{id}/fields/{fieldId}` | Soft-delete field |
+| `PUT` | `/api/{subscriberId}/forms/{id}/fields/reorder` | Reorder fields |
 | `POST` | `/api/forms/{id}/responses?subscriberId=` | Submit response |
 | `GET` | `/api/forms/{id}/responses?subscriberId=` | List responses |
 | `GET` | `/api/responses/{id}?subscriberId=` | Get response by id |
@@ -185,21 +185,19 @@ Kestrel and Docker are unaffected.
 ### Example: Create form → add field → publish → submit
 
 ```bash
-# 1. Create form (admin headers)
-curl -X POST http://localhost:8080/api/forms \
+# 1. Create form (subscriberId in route; identity headers)
+curl -X POST http://localhost:8080/api/1/forms \
   -H "Content-Type: application/json" \
   -H "x-user-id: 1" \
   -H "x-role-id: 1013" \
-  -H "x-subscriber-id: 1" \
   -H "x-subscriber-ids: [1]" \
   -d '{"name":"Contact Us","description":"Website contact","slug":"contact-us","createdBy":"admin"}'
 
 # 2. Add field (replace FORM_ID)
-curl -X POST "http://localhost:8080/api/forms/FORM_ID/fields" \
+curl -X POST "http://localhost:8080/api/1/forms/FORM_ID/fields" \
   -H "Content-Type: application/json" \
   -H "x-user-id: 1" \
   -H "x-role-id: 1013" \
-  -H "x-subscriber-id: 1" \
   -H "x-subscriber-ids: [1]" \
   -d '{
     "name":"email",
@@ -211,11 +209,10 @@ curl -X POST "http://localhost:8080/api/forms/FORM_ID/fields" \
   }'
 
 # 3. Publish
-curl -X POST "http://localhost:8080/api/forms/FORM_ID/publish" \
+curl -X POST "http://localhost:8080/api/1/forms/FORM_ID/publish" \
   -H "Content-Type: application/json" \
   -H "x-user-id: 1" \
   -H "x-role-id: 1013" \
-  -H "x-subscriber-id: 1" \
   -H "x-subscriber-ids: [1]" \
   -d '{"actor":"admin"}'
 
